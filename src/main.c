@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/15 12:56:01 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/15 13:32:56 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,12 +45,7 @@ static int fatal(t_ft_nm_error code, const char* prefix)
 {
 	static const char* errmsgs[] = {
 		"failed to map file in memory",
-		"not an elf file",
-		"invalid class. Only 32 and 64-bits are accepted",
-		"invalid endian parameter",
-		"invalid elf version",
-		"invalid object type. Only relocatables, executables and shared libraries are accepted",
-		"invalid architecture. Only x86_32 and x64 are accepted"
+		"file format not recognized",
 	};
 
 	ft_putstr_fd(prefix, STDERR_FILENO);
@@ -58,6 +53,18 @@ static int fatal(t_ft_nm_error code, const char* prefix)
 	ft_putendl_fd(errmsgs[code], STDERR_FILENO);
 	return EXIT_FAILURE;
 }
+
+static bool check_binary_format(Elf64_Ehdr* elfhdr)
+{
+	return (
+		ft_memcmp(ELFMAG, elfhdr->e_ident, 4) == 0 &&
+		(elfhdr->e_ident[EI_CLASS] == ELFCLASS32 || elfhdr->e_ident[EI_CLASS] == ELFCLASS64) &&
+		(elfhdr->e_ident[EI_DATA] == ELFDATA2LSB || elfhdr->e_ident[EI_DATA] == ELFDATA2MSB) &&
+		elfhdr->e_ident[EI_VERSION] == EV_CURRENT &&
+		elfhdr->e_type != ET_CORE
+	);
+}
+
 int main(int argc, char** argv)
 {
 	const char* fname = "a.out";
@@ -68,6 +75,13 @@ int main(int argc, char** argv)
 	const char* fcontent = map_file_content(fname, &size);
 	if (fcontent == MAP_FAILED)
 		return fatal(FILE_MAP_FAIL, fname);
+
+	if (!check_binary_format((Elf64_Ehdr*)fcontent))
+	{
+		munmap((void*)fcontent, size);
+		return fatal(BAD_FILE_FORMAT, fname);
+	}
+
 	munmap((void*)fcontent, size);
 	return EXIT_SUCCESS;
 }
