@@ -23,7 +23,7 @@ LIBFT	= libft/libft.a
 RED = \e[1;31m
 GREEN = \e[1;32m
 BLUE = \e[1;34m
-PURPLE = \e[0;35m
+PURPLE = \e[1;35m
 RESET = \e[0;0m
 
 COMPILE = ${GREEN}Compiling${RESET}
