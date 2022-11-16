@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/15 13:32:56 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/16 15:48:46 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ static int fatal(t_ft_nm_error code, const char* prefix)
 	static const char* errmsgs[] = {
 		"failed to map file in memory",
 		"file format not recognized",
+		"no symbols"
 	};
 
 	ft_putstr_fd(prefix, STDERR_FILENO);
@@ -65,6 +66,26 @@ static bool check_binary_format(Elf64_Ehdr* elfhdr)
 	);
 }
 
+static t_sections_info find_sections_table(Elf64_Ehdr* elfhdr)
+{
+	t_sections_info info;
+
+	if (elfhdr->e_ident[EI_CLASS] == ELFCLASS32)
+	{
+		Elf32_Ehdr* elfhdr32 = (Elf32_Ehdr*)elfhdr;
+		info.offset = elfhdr32->e_shoff;
+		info.entry_size = elfhdr32->e_shentsize;
+		info.entry_count = elfhdr32->e_shnum;
+	}
+	else
+	{
+		info.offset = elfhdr->e_shoff;
+		info.entry_size = elfhdr->e_shentsize;
+		info.entry_count = elfhdr->e_shnum;
+	}
+	return info;
+}
+
 int main(int argc, char** argv)
 {
 	const char* fname = "a.out";
@@ -81,6 +102,19 @@ int main(int argc, char** argv)
 		munmap((void*)fcontent, size);
 		return fatal(BAD_FILE_FORMAT, fname);
 	}
+
+	t_sections_info sections = find_sections_table((Elf64_Ehdr*)fcontent);
+	Elf64_Shdr* sec = (void*)fcontent + sections.offset; // should check offset to avoid segfault
+	
+	int i;
+	for (i = 0; i < sections.entry_count && sec->sh_type != SHT_SYMTAB; i++)
+		sec = (void*)sec + sections.entry_size;
+
+	if (i != sections.entry_count)
+	{
+	}
+	else
+		fatal(NO_SYMBOLS, fname);
 
 	munmap((void*)fcontent, size);
 	return EXIT_SUCCESS;
