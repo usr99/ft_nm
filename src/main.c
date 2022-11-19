@@ -67,26 +67,6 @@ static bool check_binary_format(Elf64_Ehdr* elfhdr)
 	);
 }
 
-static t_sections_info find_sections_table(Elf64_Ehdr* elfhdr)
-{
-	t_sections_info info;
-
-	if (elfhdr->e_ident[EI_CLASS] == ELFCLASS32)
-	{
-		Elf32_Ehdr* elfhdr32 = (Elf32_Ehdr*)elfhdr;
-		info.offset = elfhdr32->e_shoff;
-		info.entry_size = elfhdr32->e_shentsize;
-		info.entry_count = elfhdr32->e_shnum;
-	}
-	else
-	{
-		info.offset = elfhdr->e_shoff;
-		info.entry_size = elfhdr->e_shentsize;
-		info.entry_count = elfhdr->e_shnum;
-	}
-	return info;
-}
-
 int main(int argc, char** argv)
 {
 	const char* fname = "a.out";
