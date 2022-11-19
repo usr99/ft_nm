@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_nm.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:39:12 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 16:50:51 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/19 17:00:39 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ typedef struct			s_symbols
 /* sections management */
 bool			load_section_headers(t_elf_file* binary);
 Elf64_Shdr*		load_section_by_index(const t_elf_file* binary, Elf64_Section idx);
-t_symbol_table*	load_next_symtab(const t_elf_file* binary, t_symbol_table* symtab, bool* error);
+t_symbol_table*	load_next_symtab(const t_elf_file* binary, t_symbol_table* symtab, bool* error, Elf64_Word tab);
 
 /* list helpers */
 t_symbols*	create_list(int symbols_count);
