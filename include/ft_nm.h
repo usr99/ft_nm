@@ -3,15 +3,23 @@
 /*                                                        :::      ::::::::   */
 /*   ft_nm.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:39:12 by mamartin          #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2022/11/19 07:40:52 by mamartin         ###   ########.fr       */
+=======
+/*   Updated: 2022/11/19 15:47:16 by kali             ###   ########.fr       */
+>>>>>>> 4e3de91 (Add list utilities)
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _NM_H_
 # define _NM_H_
+# include <stddef.h>
+# include <stdbool.h>
+# include <stdlib.h>
+# include <elf.h>
 
 # include <stdbool.h>
 # include <stdlib.h>
@@ -49,5 +57,23 @@ typedef struct
 	Elf64_Xword	symcount;
 	Elf64_Xword symsize;
 }				t_symbol_table;
+
+typedef struct			s_symbols
+{
+	Elf64_Addr			addr;
+	Elf64_Word			name;
+	unsigned char		type;
+	unsigned char		binding;
+	Elf64_Section		shndx;
+	struct s_symbols*	next;
+}						t_symbols;
+
+
+t_symbols*  create_list(int symbols_count);
+int     	list_size(t_symbols* symbols);
+void    	print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file bin);
+void		load_list(t_symbol_table* symtab, t_symbols* symbols);
+void 		ft_putnbr_hex(size_t nbr);
+char 		detect_symbol_type(t_symbols* sym, const t_elf_file* binary);
 
 #endif

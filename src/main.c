@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 07:51:56 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/19 16:04:02 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,9 @@
 
 #include "sections.h"
 #include "libft.h"
+#include "sections.h"
 
-static const char* map_file_content(const char* filename, off_t* size)
+static const char* map_file_content(const char* filename, size_t* size)
 {
 	int fd = open(filename, O_RDONLY);
 	if (fd == -1)
@@ -97,6 +98,8 @@ int main(int argc, char** argv)
 	{
 		symbols_found = true;
 	{
+		munmap(bin.start, bin.size);
+		return fatal(OUT_OF_BOUNDS, fname);
 	}
 	if (err || !symbols_found)
 	{
