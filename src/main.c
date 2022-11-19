@@ -3,14 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2022/11/19 16:55:05 by mamartin         ###   ########.fr       */
-=======
-/*   Updated: 2022/11/19 16:51:56 by kali             ###   ########.fr       */
->>>>>>> 44cf7e2 (Modify function load_next_symtab to take which symtab in parameter)
+/*   Updated: 2022/11/19 16:59:42 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
