@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 17:53:10 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 18:33:37 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,8 +103,11 @@ int main(int argc, char** argv)
 			return fatal(err ? OUT_OF_BOUNDS : NO_SYMBOLS, fname);
 		}
 		symbols = create_list(symtab.symcount);
-		load_list(&symtab, symbols);
-		print_list(symbols, &symtab, bin);
+		if (bin.x64)
+			load_list_64bits(&symtab, symbols);
+		else
+			load_list_32bits(&symtab, symbols);
+		print_list(symbols, &symtab, &bin);
 	}
 	munmap(bin.start, bin.size);
 	return EXIT_SUCCESS;

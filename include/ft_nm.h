@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:39:12 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 17:25:52 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 18:33:57 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,8 +74,9 @@ t_symbol_table*	load_next_symtab(const t_elf_file* binary, t_symbol_table* symta
 /* list helpers */
 t_symbols*	create_list(int symbols_count);
 int			list_size(t_symbols* symbols);
-void		print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file bin);
-void		load_list(t_symbol_table* symtab, t_symbols* symbols);
+void		print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file *bin);
+void		load_list_64bits(t_symbol_table* symtab, t_symbols* symbols);
+void		load_list_32bits(t_symbol_table* symtab, t_symbols* symbols);
 void		ft_putnbr_hex(size_t nbr);
 char		detect_symbol_type(t_symbols* sym, const t_elf_file* binary);
 

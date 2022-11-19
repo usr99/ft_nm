@@ -6,12 +6,13 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 07:36:02 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 17:54:50 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 18:32:31 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include "ft_nm.h"
+#include <stdio.h>
 
 static bool validate_section_header(const t_elf_file* binary, void* ptr)
 {
@@ -28,11 +29,12 @@ static bool validate_section_header(const t_elf_file* binary, void* ptr)
 	else
 	{
 		Elf32_Shdr* section = ptr;
-		return (
+        int i = (
 			section->sh_link < binary->shdrtab.entry_count &&
-			section->sh_offset + section->sh_size < binary->size &&
+			section->sh_offset + section->sh_size <= binary->size &&
 			section->sh_entsize <= section->sh_size
-		);		
+		);
+		return i;		
 	}
 }
 
@@ -106,7 +108,6 @@ t_symbol_table* load_next_symtab(const t_elf_file* binary, t_symbol_table* symta
 		symtab->symsize = symhdr32->sh_entsize;
 		stridx = symhdr32->sh_link;
 	}
-
 	/* Retrieve symbol names in the .strtab section */
 	strtab = load_section_by_index(binary, stridx);
 	if (!strtab)
@@ -115,11 +116,15 @@ t_symbol_table* load_next_symtab(const t_elf_file* binary, t_symbol_table* symta
 		return NULL;
 	}
 
-    symtab->strtab_end = ((Elf64_Shdr*)strtab)->sh_offset + ((Elf64_Shdr*)strtab)->sh_size;
-
 	if (binary->x64)
+    {
 		symtab->names = binary->start + ((Elf64_Shdr*)strtab)->sh_offset;
+        symtab->strtab_end = ((Elf64_Shdr*)strtab)->sh_offset + ((Elf64_Shdr*)strtab)->sh_size;
+    }
 	else
+    {
 		symtab->names = binary->start + ((Elf32_Shdr*)strtab)->sh_offset;
+        symtab->strtab_end = ((Elf32_Shdr*)strtab)->sh_offset + ((Elf32_Shdr*)strtab)->sh_size;
+    }
 	return symtab;
 }
