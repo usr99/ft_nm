@@ -10,7 +10,7 @@ CC		= gcc
 INC 	= -I ./include -I ./libft
 
 SRCDIR	= ./src/
-SRC		= main.c
+SRC		= main.c sections.c
 OBJDIR	= ./objs/
 OBJS	= ${addprefix ${OBJDIR}, ${SRC:.c=.o}}
 

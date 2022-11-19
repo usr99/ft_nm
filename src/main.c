@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/16 15:48:46 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/19 07:51:56 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,8 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <elf.h>
 
-#include "ft_nm.h"
+#include "sections.h"
 #include "libft.h"
 
 static const char* map_file_content(const char* filename, off_t* size)
@@ -34,7 +33,7 @@ static const char* map_file_content(const char* filename, off_t* size)
 		return MAP_FAILED;
 	}
 	
-	const char* mapped = mmap(NULL, info.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	void* mapped = mmap(NULL, info.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	
 	close(fd);
 	*size = info.st_size;
@@ -46,7 +45,9 @@ static int fatal(t_ft_nm_error code, const char* prefix)
 	static const char* errmsgs[] = {
 		"failed to map file in memory",
 		"file format not recognized",
-		"no symbols"
+		"no symbols",
+		"out of memory",
+		"pointer outside of mapped content"
 	};
 
 	ft_putstr_fd(prefix, STDERR_FILENO);
@@ -92,30 +93,37 @@ int main(int argc, char** argv)
 	if (argc > 1)
 		fname = argv[1];
 
-	off_t size;
-	const char* fcontent = map_file_content(fname, &size);
-	if (fcontent == MAP_FAILED)
+	t_elf_file bin;
+	bin.start = map_file_content(fname, &bin.size);
+	if (bin.start == MAP_FAILED)
 		return fatal(FILE_MAP_FAIL, fname);
 
-	if (!check_binary_format((Elf64_Ehdr*)fcontent))
+	if (!check_binary_format(bin.start))
 	{
-		munmap((void*)fcontent, size);
+		munmap(bin.start, bin.size);
 		return fatal(BAD_FILE_FORMAT, fname);
 	}
 
-	t_sections_info sections = find_sections_table((Elf64_Ehdr*)fcontent);
-	Elf64_Shdr* sec = (void*)fcontent + sections.offset; // should check offset to avoid segfault
-	
-	int i;
-	for (i = 0; i < sections.entry_count && sec->sh_type != SHT_SYMTAB; i++)
-		sec = (void*)sec + sections.entry_size;
+	if (!load_section_headers(&bin))
+	{
+		munmap(bin.start, bin.size);
+		return fatal(OUT_OF_BOUNDS, fname);
+	}
 
-	if (i != sections.entry_count)
+	bool err;
+	t_symbol_table symtab;
+	bool symbols_found = false;
+	while (load_next_symtab(&bin, &symtab, &err))
+	{
+		symbols_found = true;
 	{
 	}
-	else
-		fatal(NO_SYMBOLS, fname);
+	if (err || !symbols_found)
+	{
+		munmap(bin.start, bin.size);
+		return fatal(err ? OUT_OF_BOUNDS : NO_SYMBOLS, fname);
+	}
 
-	munmap((void*)fcontent, size);
+	munmap(bin.start, bin.size);
 	return EXIT_SUCCESS;
 }
