@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 07:36:02 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 16:51:12 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 17:16:03 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,6 +114,8 @@ t_symbol_table* load_next_symtab(const t_elf_file* binary, t_symbol_table* symta
 		*error = true;
 		return NULL;
 	}
+
+    symtab->strtab_end = ((Elf64_Shdr*)strtab)->sh_offset + ((Elf64_Shdr*)strtab)->sh_size;
 
 	if (binary->x64)
 		symtab->names = binary->start + ((Elf64_Shdr*)strtab)->sh_offset;

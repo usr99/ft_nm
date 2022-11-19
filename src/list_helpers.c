@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   list_helpers.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 17:04:03 by timlecou          #+#    #+#             */
-/*   Updated: 2022/11/19 16:55:23 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/19 17:16:46 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,16 @@ void    print_zeros(size_t nbr)
     write(1, "0000000000000000", 16 - i);
 }
 
+void    print_symbols(char* names, t_symbol_table* symtab)
+{
+    unsigned int    i = 0;
+
+    while (names[i] != '\0' && i < symtab->strtab_end)
+        i++;
+    write(1, names, i);
+    write(1, "\n", 1);
+}
+
 void    print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file bin)
 {
     t_symbols*  tmp = symbols;
@@ -112,7 +122,7 @@ void    print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file bin)
         type = detect_symbol_type(tmp, &bin);
         write(1, &type, 1);
         write(1, " ", 1);
-        ft_putendl_fd(symtab->names + tmp->name, 1);
+        print_symbols(symtab->names + tmp->name, symtab);
         tmp = tmp->next;
     }
 }

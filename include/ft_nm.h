@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:39:12 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 17:00:39 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 17:15:13 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ typedef struct
 	void*		names;
 	Elf64_Xword	symcount;
 	Elf64_Xword symsize;
+	Elf64_Word	strtab_end;
 }				t_symbol_table;
 
 typedef struct			s_symbols
