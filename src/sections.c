@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 07:36:02 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 17:16:03 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 17:54:50 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ bool load_section_headers(t_elf_file* binary)
 	}
 	else
 	{
-		Elf32_Ehdr* elfhdr32 = (Elf32_Ehdr*)elfhdr;
+		Elf32_Ehdr* elfhdr32 = binary->start;
 		offset = elfhdr32->e_shoff;
 		shdrtab->entry_size = elfhdr32->e_shentsize;
 		shdrtab->entry_count = elfhdr32->e_shnum;
@@ -59,7 +59,7 @@ bool load_section_headers(t_elf_file* binary)
 	shdrtab->start = binary->start + offset;
 
 	/* Make sure that the entire table is inside mapped memory  */
-	return (binary->size <= offset + shdrtab->entry_count * shdrtab->entry_size);
+	return (binary->size >= offset + shdrtab->entry_count * shdrtab->entry_size);
 }
 
 Elf64_Shdr* load_section_by_index(const t_elf_file* binary, Elf64_Section idx)

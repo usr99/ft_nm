@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:39:12 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 17:15:13 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 17:25:52 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <stdbool.h>
 # include <stdlib.h>
 # include <elf.h>
+# include "libft.h"
 
 # include <stdbool.h>
 # include <stdlib.h>

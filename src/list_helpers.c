@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 17:04:03 by timlecou          #+#    #+#             */
-/*   Updated: 2022/11/19 17:16:46 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 17:52:52 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ void ft_putnbr_hex(size_t nbr)
         ft_putchar_fd(digits[nbr % 16], 1);
 }
 
-void    print_zeros(size_t nbr)
+void    print_zeros(size_t nbr, short arch)
 {
     int     i = 1;
     while (nbr >= 16)
@@ -91,7 +91,7 @@ void    print_zeros(size_t nbr)
         nbr /= 16;
         i++;
     }
-    write(1, "0000000000000000", 16 - i);
+    write(1, "0000000000000000", arch - i);
 }
 
 void    print_symbols(char* names, t_symbol_table* symtab)
@@ -113,7 +113,7 @@ void    print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file bin)
     {
         if (tmp->addr != 0)
         {
-            print_zeros(tmp->addr);
+            print_zeros(tmp->addr, (bin.x64 ? 16 : 8));
             ft_putnbr_hex(tmp->addr);
         }
         else

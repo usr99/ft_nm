@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 16:59:42 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 17:53:10 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ int main(int argc, char** argv)
 	t_symbol_table symtab;
 	t_symbols*		symbols;
 	bool symbols_found = false;
-	while (load_next_symtab(&bin, &symtab, &err, SHT_DYNSYM))
+	while (load_next_symtab(&bin, &symtab, &err, SHT_SYMTAB))
 	{
 		symbols_found = true;
 		if (err || !symbols_found)
