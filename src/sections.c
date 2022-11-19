@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 07:36:02 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 16:07:25 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 16:51:12 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ Elf64_Shdr* load_section_by_index(const t_elf_file* binary, Elf64_Section idx)
 	return validate_section_header(binary, section) ? section : NULL;
 }
 
-t_symbol_table* load_next_symtab(const t_elf_file* binary, t_symbol_table* symtab, bool* error)
+t_symbol_table* load_next_symtab(const t_elf_file* binary, t_symbol_table* symtab, bool* error, Elf64_Word tab)
 {
 	static Elf64_Section nextidx = 0;
 	
@@ -80,7 +80,7 @@ t_symbol_table* load_next_symtab(const t_elf_file* binary, t_symbol_table* symta
 	void* strtab;
 
 	*error = false;
-	while (nextidx++ < binary->shdrtab.entry_count && symhdr->sh_type != SHT_SYMTAB)
+	while (nextidx++ < binary->shdrtab.entry_count && symhdr->sh_type != tab)
 		symhdr = (void*)symhdr + binary->shdrtab.entry_size;
 
 	if (nextidx > binary->shdrtab.entry_count)
