@@ -3,20 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   list_helpers.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 17:04:03 by timlecou          #+#    #+#             */
-/*   Updated: 2022/11/19 15:51:13 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 16:55:23 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <elf.h>
-#include "ft_nm.h"
-#include "libft.h"
 #include <sys/mman.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+
+#include "ft_nm.h"
+#include "libft.h"
 
 t_symbols*  create_list(int symbols_count)
 {

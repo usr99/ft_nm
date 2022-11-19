@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   symbols.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 14:30:19 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 16:06:54 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 16:55:12 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "sections.h"
+#include "ft_nm.h"
 
 char detect_symbol_type(t_symbols* sym, const t_elf_file* binary)
 {

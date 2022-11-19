@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 16:41:35 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 16:55:05 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "sections.h"
+#include "ft_nm.h"
 #include "libft.h"
-#include "sections.h"
 
 static void* map_file_content(const char* filename, size_t* size)
 {
