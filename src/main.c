@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 16:04:02 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 16:41:35 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 #include "libft.h"
 #include "sections.h"
 
-static const char* map_file_content(const char* filename, size_t* size)
+static void* map_file_content(const char* filename, size_t* size)
 {
 	int fd = open(filename, O_RDONLY);
 	if (fd == -1)
@@ -93,20 +93,20 @@ int main(int argc, char** argv)
 
 	bool err;
 	t_symbol_table symtab;
+	t_symbols*		symbols;
 	bool symbols_found = false;
 	while (load_next_symtab(&bin, &symtab, &err))
 	{
 		symbols_found = true;
-	{
-		munmap(bin.start, bin.size);
-		return fatal(OUT_OF_BOUNDS, fname);
+		if (err || !symbols_found)
+		{
+			munmap(bin.start, bin.size);
+			return fatal(err ? OUT_OF_BOUNDS : NO_SYMBOLS, fname);
+		}
+		symbols = create_list(symtab.symcount);
+		load_list(&symtab, symbols);
+		print_list(symbols, &symtab, bin);
 	}
-	if (err || !symbols_found)
-	{
-		munmap(bin.start, bin.size);
-		return fatal(err ? OUT_OF_BOUNDS : NO_SYMBOLS, fname);
-	}
-
 	munmap(bin.start, bin.size);
 	return EXIT_SUCCESS;
 }
