@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_nm.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:39:12 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 16:07:07 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 16:50:51 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,12 +64,17 @@ typedef struct			s_symbols
 	struct s_symbols*	next;
 }						t_symbols;
 
+/* sections management */
+bool			load_section_headers(t_elf_file* binary);
+Elf64_Shdr*		load_section_by_index(const t_elf_file* binary, Elf64_Section idx);
+t_symbol_table*	load_next_symtab(const t_elf_file* binary, t_symbol_table* symtab, bool* error);
 
-t_symbols*  create_list(int symbols_count);
-int     	list_size(t_symbols* symbols);
-void    	print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file bin);
+/* list helpers */
+t_symbols*	create_list(int symbols_count);
+int			list_size(t_symbols* symbols);
+void		print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file bin);
 void		load_list(t_symbol_table* symtab, t_symbols* symbols);
-void 		ft_putnbr_hex(size_t nbr);
-char 		detect_symbol_type(t_symbols* sym, const t_elf_file* binary);
+void		ft_putnbr_hex(size_t nbr);
+char		detect_symbol_type(t_symbols* sym, const t_elf_file* binary);
 
 #endif

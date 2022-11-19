@@ -8,6 +8,8 @@ CFLAGS	= -Wall -Wextra -g #-Werror
 CC		= gcc
 
 INC 	= -I ./include -I ./libft
+HEADERS = ft_nm.h
+DEPS	= ${addprefix include/, ${HEADERS}}
 
 SRCDIR	= ./src/
 SRC		= main.c list_helpers.c sections.c symbols.c
@@ -34,7 +36,7 @@ CLEAN = ${RED}Cleaning${RESET}
 #				COMPILATION RULES				 #
 ##################################################
 
-${OBJDIR}%.o: ${SRCDIR}%.c
+${OBJDIR}%.o: ${SRCDIR}%.c ${DEPS}
 	@echo "${COMPILE} $<"
 	@${CC} ${CFLAGS} -c $< ${INC} -o $@
 
