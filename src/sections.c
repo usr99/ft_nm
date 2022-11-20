@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   sections.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 07:36:02 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 18:32:31 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 20:02:23 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,19 +73,17 @@ Elf64_Shdr* load_section_by_index(const t_elf_file* binary, Elf64_Section idx)
 	return validate_section_header(binary, section) ? section : NULL;
 }
 
-t_symbol_table* load_next_symtab(const t_elf_file* binary, t_symbol_table* symtab, bool* error, Elf64_Word tab)
+t_symbol_table* load_next_symtab(t_elf_file* binary, t_symbol_table* symtab, bool* error, Elf64_Word tab)
 {
-	static Elf64_Section nextidx = 0;
-	
-	Elf64_Shdr* symhdr = binary->shdrtab.start + nextidx * binary->shdrtab.entry_size;
+	Elf64_Shdr* symhdr = binary->shdrtab.start + binary->last_symtab_ndx * binary->shdrtab.entry_size;
 	Elf64_Section stridx;
 	void* strtab;
 
 	*error = false;
-	while (nextidx++ < binary->shdrtab.entry_count && symhdr->sh_type != tab)
+	while (binary->last_symtab_ndx++ < binary->shdrtab.entry_count && symhdr->sh_type != tab)
 		symhdr = (void*)symhdr + binary->shdrtab.entry_size;
 
-	if (nextidx > binary->shdrtab.entry_count)
+	if (binary->last_symtab_ndx > binary->shdrtab.entry_count)
 		return NULL; // no more .symtab sections
 
 	*error = (!validate_section_header(binary, symhdr));
