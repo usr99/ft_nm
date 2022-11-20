@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 20:20:30 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/19 20:24:55 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,8 +78,7 @@ int main(int argc, char** argv)
 	}
 	else
 	{
-		t_ft_nm_error status = parse_options(argc, argv, &params);
-		if (status == OOM)
+		if (parse_options(argc, argv, &params) == OOM)
 			return fatal(OOM, *argv);
 	}
 

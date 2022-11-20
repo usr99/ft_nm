@@ -6,17 +6,35 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 17:08:47 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 20:09:52 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/19 20:28:56 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_nm.h"
 #include "libft.h"
 
-# define N_OPTIONS_SUPPORTED 5
+# define N_OPTIONS_SUPPORTED 6
+
+static void print_option_usage(char optname, const char* desc)
+{
+	ft_putstr(" -");
+	ft_putchar(optname);
+	ft_putstr(",\t");
+	ft_putendl(desc);
+}
 
 void print_usage(const char* progname)
 {
+	ft_putstr("Usage: ");
+	ft_putstr(progname);
+	ft_putstr(" [option(s)] [file(s)]\n List symbols in [file(s)] (a.out by default).\n The options are:\n");
+
+	print_option_usage('a', "Display debugger-only symbols");
+	print_option_usage('g', "Display only external symbols");
+	print_option_usage('p', "Do not sort the symbols");
+	print_option_usage('r', "Reverse the sense of the sort");
+	print_option_usage('u', "Display only undefined symbols");
+	print_option_usage('h', "Display this information");
 	exit(EXIT_SUCCESS);
 }
 
