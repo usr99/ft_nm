@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 20:24:55 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/19 20:37:18 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,63 +82,66 @@ int main(int argc, char** argv)
 			return fatal(OOM, *argv);
 	}
 
-	if (params.fcount == 0)
-	{
-		*params.filenames = "a.out";
-		params.fcount = 1;
-	}
+    if (params.fcount == 0)
+    {
+        *params.filenames = "a.out";
+        params.fcount = 1;
+    }
 
-	int i = 0;
-	while (i < params.fcount)
-	{
-		const char* fname = params.filenames[i];
+    int i = 0;
+    while (i < params.fcount)
+    {
+        const char* fname = params.filenames[i];
 
-		t_elf_file bin = {0};
-		bin.start = map_file_content(fname, &bin.size);
-		if (bin.start == MAP_FAILED)
-			return fatal(FILE_MAP_FAIL, fname);
+        t_elf_file bin = {0};
+        bin.start = map_file_content(fname, &bin.size);
+        if (bin.start == MAP_FAILED)
+            return fatal(FILE_MAP_FAIL, fname);
 
-		if (!check_binary_format(bin.start))
-		{
-			munmap(bin.start, bin.size);
-			return fatal(BAD_FILE_FORMAT, fname);
-		}
+        if (!check_binary_format(bin.start))
+        {
+            munmap(bin.start, bin.size);
+            return fatal(BAD_FILE_FORMAT, fname);
+        }
 
-		if (!load_section_headers(&bin))
-		{
-			munmap(bin.start, bin.size);
-			return fatal(OUT_OF_BOUNDS, fname);
-		}
+        if (!load_section_headers(&bin))
+        {
+            munmap(bin.start, bin.size);
+            return fatal(OUT_OF_BOUNDS, fname);
+        }
 
-		if (params.fcount != 1)
-		{
-			ft_putchar('\n');
-			ft_putstr(fname);
-			ft_putstr(":\n");
-		}
+        if (params.fcount != 1)
+        {
+            ft_putchar('\n');
+            ft_putstr(fname);
+            ft_putstr(":\n");
+        }
 
-		bool err;
-		t_symbol_table symtab;
-		t_symbols *symbols;
-		bool symbols_found = false;
-		while (load_next_symtab(&bin, &symtab, &err, SHT_SYMTAB))
-		{
-			symbols_found = true;
-			symbols = create_list(symtab.symcount);
-			if (bin.x64)
-				load_list_64bits(&symtab, symbols);
-			else
-				load_list_32bits(&symtab, symbols);
-			sort_list(symbols, &symtab, true);
-			print_list(symbols, &symtab, &bin);
-		}
+        bool err;
+        t_symbol_table symtab;
+        t_symbols *symbols;
+        bool symbols_found = false;
+        while (load_next_symtab(&bin, &symtab, &err, SHT_SYMTAB))
+        {
+            symbols_found = true;
+            symbols = create_list(symtab.symcount);
+            if (bin.x64)
+                load_list_64bits(&symtab, symbols);
+            else
+                load_list_32bits(&symtab, symbols);
+			if (params.sort == SYMSORT_REVERSE)
+            	sort_list(symbols, &symtab, true);
+			else if (params.sort == SYMSORT_DEFAULT)
+            	sort_list(symbols, &symtab, false);
+            print_list(symbols, &symtab, &bin, &params);
+        }
 
-		munmap(bin.start, bin.size);
-		if (err || !symbols_found)
-			return fatal(err ? OUT_OF_BOUNDS : NO_SYMBOLS, fname);
-		i++;
-	}
+        munmap(bin.start, bin.size);
+        if (err || !symbols_found)
+            return fatal(err ? OUT_OF_BOUNDS : NO_SYMBOLS, fname);
+        i++;
+    }
 
-	free(params.filenames);
-	return EXIT_SUCCESS;
+    free(params.filenames);
+    return EXIT_SUCCESS;
 }

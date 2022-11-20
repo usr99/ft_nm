@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_nm.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:39:12 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 20:11:20 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/19 20:30:30 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ t_symbol_table*	load_next_symtab(t_elf_file* binary, t_symbol_table* symtab, boo
 /* List helpers */
 t_symbols*	create_list(int symbols_count);
 int			list_size(t_symbols* symbols);
-void		print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file *bin);
+void		print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file *bin, t_options* params);
 void		load_list_64bits(t_symbol_table* symtab, t_symbols* symbols);
 void		load_list_32bits(t_symbol_table* symtab, t_symbols* symbols);
 void		sort_list(t_symbols* symbols, t_symbol_table* symtab, bool reverse);

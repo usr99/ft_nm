@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 17:04:03 by timlecou          #+#    #+#             */
-/*   Updated: 2022/11/19 20:07:48 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 20:35:29 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,30 +127,33 @@ void    print_symbols(char* names, t_symbol_table* symtab)
     write(1, "\n", 1);
 }
 
-void    print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file* bin)
+void    print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file* bin, t_options* params)
 {
     t_symbols*  tmp = symbols;
     char        type = 0;
 
     while (tmp->next)
     {
-        if (tmp->addr != 0)
-        {
-            print_zeros(tmp->addr, (bin->x64 ? 16 : 8));
-            ft_putnbr_hex(tmp->addr);
-        }
-        else
-        {
-            if (bin->x64)
-                write(1, "                ", 16);
-            else
-                write(1, "        ", 8);
-        }
-        write(1, " ", 1);
         type = detect_symbol_type(tmp, bin);
-        write(1, &type, 1);
-        write(1, " ", 1);
-        print_symbols(symtab->names + tmp->name, symtab);
+        if (!(params->undefined_only && type != 'U' && type != 'u'))
+        {
+            if (tmp->addr != 0)
+            {
+                print_zeros(tmp->addr, (bin->x64 ? 16 : 8));
+                ft_putnbr_hex(tmp->addr);
+            }
+            else
+            {
+                if (bin->x64)
+                    write(1, "                ", 16);
+                else
+                    write(1, "        ", 8);
+            }
+            write(1, " ", 1);
+            write(1, &type, 1);
+            write(1, " ", 1);
+            print_symbols(symtab->names + tmp->name, symtab);
+        }
         // printf("%d\n", tmp->shndx);
         tmp = tmp->next;
     }
