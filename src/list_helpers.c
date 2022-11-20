@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 17:04:03 by timlecou          #+#    #+#             */
-/*   Updated: 2022/11/19 19:40:24 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 19:53:48 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,6 +151,7 @@ void    print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file* bin)
         write(1, &type, 1);
         write(1, " ", 1);
         print_symbols(symtab->names + tmp->name, symtab);
+        // printf("%d\n", tmp->shndx);
         tmp = tmp->next;
     }
 }

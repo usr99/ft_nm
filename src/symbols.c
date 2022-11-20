@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   symbols.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 14:30:19 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 16:55:12 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/19 19:56:48 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,10 @@ char detect_symbol_type(t_symbols* sym, const t_elf_file* binary)
 	char type;
 	if (sym->type == STT_FUNC)
 		type = (sym->addr) ? 'T' : 'U';
+    else if (sym->shndx == SHN_ABS)
+        return ('A');
+    else if (sym->shndx == SHN_COMMON)
+        return ('C');
 	else if (sym->type == STT_OBJECT || sym->type == STT_NOTYPE)
 	{
 		Elf64_Shdr* section = load_section_by_index(binary, sym->shndx);
