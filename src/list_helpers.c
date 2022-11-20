@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 17:04:03 by timlecou          #+#    #+#             */
-/*   Updated: 2022/11/19 18:33:33 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 19:40:24 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,6 +151,102 @@ void    print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file* bin)
         write(1, &type, 1);
         write(1, " ", 1);
         print_symbols(symtab->names + tmp->name, symtab);
+        tmp = tmp->next;
+    }
+}
+
+void	swap_names(t_symbols* node_1, t_symbols* node_2)
+{
+    Elf64_Word	tmp1 = node_1->name;
+    node_1->name = node_2->name;
+    node_2->name = tmp1;
+}
+
+void	swap_addresses(t_symbols* node_1, t_symbols* node_2)
+{
+    Elf64_Addr	tmp1 = node_1->addr;
+    node_1->addr = node_2->addr;
+    node_2->addr = tmp1;
+}
+
+void	swap_types(t_symbols* node_1, t_symbols* node_2)
+{
+    unsigned char	tmp1 = node_1->type;
+    node_1->type = node_2->type;
+    node_2->type = tmp1;
+}
+
+void	swap_bindings(t_symbols* node_1, t_symbols* node_2)
+{
+    unsigned char	tmp1 = node_1->binding;
+    node_1->binding = node_2->binding;
+    node_2->binding = tmp1;
+}
+
+void	swap_shndxs(t_symbols* node_1, t_symbols* node_2)
+{
+    Elf64_Section	tmp1 = node_1->shndx;
+    node_1->shndx = node_2->shndx;
+    node_2->shndx = tmp1;
+}
+
+int	ft_strncmp_no_case(const char *s1, const char *s2, size_t n)
+{
+	size_t	i;
+    char    c1;
+    char    c2;
+
+	i = 0;
+	if (n == 0)
+		return (0);
+	while ((s1[i] || s2[i]) && i < n)
+	{
+        c1 = s1[i];
+        c2 = s2[i];
+        if (c1 >= 65 && c1 <= 90)
+            c1 += 32;
+        if (c2 >= 65 && c2 <= 90)
+            c2 += 32;
+		if (c1 != c2)
+			return ((unsigned char)c1 - (unsigned char)c2);
+		i++;
+	}
+	return (0);
+}
+
+
+void	sort_list(t_symbols* symbols, t_symbol_table* symtab)
+{
+	int	curr_i;
+	int	next_i;
+	t_symbols*	tmp = symbols;
+	t_symbols*	tmp_2 = symbols->next;
+    char*       current_name = NULL;
+    char*       next_name = NULL;
+
+    while (tmp->next)
+    {
+        tmp_2 = tmp->next;
+        while (tmp_2->next)
+        {
+            curr_i = 0;
+            next_i = 0;
+            current_name = symtab->names + tmp->name;
+            next_name = symtab->names + tmp_2->name;
+            while (current_name[curr_i] != '\0' && current_name[curr_i] == '_')
+                curr_i++;
+            while (next_name[next_i] != '\0' && next_name[next_i] == '_')
+                next_i++;
+            if (ft_strncmp_no_case(&current_name[curr_i], &next_name[next_i], ft_strlen(&next_name[next_i])) >= 0)
+            {
+                swap_names(tmp, tmp_2);
+                swap_addresses(tmp, tmp_2);
+                swap_types(tmp, tmp_2);
+                swap_bindings(tmp, tmp_2);
+                swap_shndxs(tmp, tmp_2);
+            }
+            tmp_2 = tmp_2->next;
+        }
         tmp = tmp->next;
     }
 }
