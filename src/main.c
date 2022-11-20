@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 20:11:57 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/19 20:20:30 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,14 +75,18 @@ int main(int argc, char** argv)
 		params.filenames = malloc(sizeof(const char*));
 		if (!params.filenames)
 			return fatal(OOM, *argv);
-		*params.filenames = "a.out";
-		params.fcount = 1;
 	}
 	else
 	{
 		t_ft_nm_error status = parse_options(argc, argv, &params);
 		if (status == OOM)
 			return fatal(OOM, *argv);
+	}
+
+	if (params.fcount == 0)
+	{
+		*params.filenames = "a.out";
+		params.fcount = 1;
 	}
 
 	int i = 0;
