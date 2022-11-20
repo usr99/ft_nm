@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 19:13:51 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 20:07:42 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,7 +107,7 @@ int main(int argc, char** argv)
 			load_list_64bits(&symtab, symbols);
 		else
 			load_list_32bits(&symtab, symbols);
-		sort_list(symbols, &symtab);
+		sort_list(symbols, &symtab, true);
 		print_list(symbols, &symtab, &bin);
 	}
 	munmap(bin.start, bin.size);

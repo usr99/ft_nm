@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 17:04:03 by timlecou          #+#    #+#             */
-/*   Updated: 2022/11/19 19:53:48 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/19 20:07:48 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,7 +216,7 @@ int	ft_strncmp_no_case(const char *s1, const char *s2, size_t n)
 }
 
 
-void	sort_list(t_symbols* symbols, t_symbol_table* symtab)
+void	sort_list(t_symbols* symbols, t_symbol_table* symtab, bool reverse)
 {
 	int	curr_i;
 	int	next_i;
@@ -224,6 +224,7 @@ void	sort_list(t_symbols* symbols, t_symbol_table* symtab)
 	t_symbols*	tmp_2 = symbols->next;
     char*       current_name = NULL;
     char*       next_name = NULL;
+    bool        ret = false;
 
     while (tmp->next)
     {
@@ -238,7 +239,11 @@ void	sort_list(t_symbols* symbols, t_symbol_table* symtab)
                 curr_i++;
             while (next_name[next_i] != '\0' && next_name[next_i] == '_')
                 next_i++;
-            if (ft_strncmp_no_case(&current_name[curr_i], &next_name[next_i], ft_strlen(&next_name[next_i])) >= 0)
+            if (reverse == false)
+                ret = (ft_strncmp_no_case(&current_name[curr_i], &next_name[next_i], ft_strlen(&next_name[next_i])) >= 0);
+            else
+                ret = (ft_strncmp_no_case(&current_name[curr_i], &next_name[next_i], ft_strlen(&next_name[next_i])) < 0);
+            if (ret)
             {
                 swap_names(tmp, tmp_2);
                 swap_addresses(tmp, tmp_2);
