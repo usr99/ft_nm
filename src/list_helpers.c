@@ -6,7 +6,7 @@
 /*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 17:04:03 by timlecou          #+#    #+#             */
-/*   Updated: 2022/11/19 20:35:29 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/22 17:57:12 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ void	load_list_32bits(t_symbol_table* symtab, t_symbols* symbols)
             tmp->addr = syms->st_value;
             tmp->type = ELF32_ST_TYPE(syms->st_info);
             tmp->binding = ELF32_ST_BIND(syms->st_info);
+            tmp->visibility = ELF32_ST_VISIBILITY(syms->st_other);
             tmp->shndx = syms->st_shndx;
             tmp = tmp->next;
         }
@@ -84,6 +85,7 @@ void	load_list_64bits(t_symbol_table* symtab, t_symbols* symbols)
             tmp->addr = syms->st_value;
             tmp->type = ELF64_ST_TYPE(syms->st_info);
             tmp->binding = ELF64_ST_BIND(syms->st_info);
+            tmp->visibility = ELF64_ST_VISIBILITY(syms->st_other);
             tmp->shndx = syms->st_shndx;
             tmp = tmp->next;
         }
@@ -127,6 +129,18 @@ void    print_symbols(char* names, t_symbol_table* symtab)
     write(1, "\n", 1);
 }
 
+bool    have_to_print(t_options* params, t_symbols* sym)
+{
+    if (params->undefined_only)
+        return (!sym->addr);
+    else if (params->extern_only)
+    {
+        if (sym->binding == STB_LOCAL)
+            return (false);
+    }
+    return (true);
+}
+
 void    print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file* bin, t_options* params)
 {
     t_symbols*  tmp = symbols;
@@ -135,7 +149,7 @@ void    print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file* bin, 
     while (tmp->next)
     {
         type = detect_symbol_type(tmp, bin);
-        if (!(params->undefined_only && tmp->addr))
+        if (have_to_print(params, tmp))
         {
             if (tmp->addr != 0)
             {

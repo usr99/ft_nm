@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_nm.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:39:12 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/22 04:33:11 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/22 17:50:48 by kali             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ typedef struct s_symbols
 	Elf64_Word			name;
 	unsigned char		type;
 	unsigned char		binding;
+	unsigned char		visibility;
 	Elf64_Section		shndx;
 	struct s_symbols*	next;
 }						t_symbols;
