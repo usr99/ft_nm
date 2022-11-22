@@ -135,7 +135,7 @@ void    print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file* bin, 
     while (tmp->next)
     {
         type = detect_symbol_type(tmp, bin);
-        if (!(params->undefined_only && type != 'U' && type != 'u'))
+        if (!(params->undefined_only && tmp->addr))
         {
             if (tmp->addr != 0)
             {
