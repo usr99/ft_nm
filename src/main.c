@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 20:37:18 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/22 04:33:43 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,7 @@ int main(int argc, char** argv)
         t_symbol_table symtab;
         t_symbols *symbols;
         bool symbols_found = false;
-        while (load_next_symtab(&bin, &symtab, &err, SHT_SYMTAB))
+        while (load_next_symtab(&bin, &symtab, &err, (params.dynamic_only ? SHT_DYNSYM : SHT_SYMTAB)))
         {
             symbols_found = true;
             symbols = create_list(symtab.symcount);

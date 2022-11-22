@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   options.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 17:08:47 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 20:37:06 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/22 04:46:39 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_nm.h"
 #include "libft.h"
 
-# define N_OPTIONS_SUPPORTED 6
+# define N_OPTIONS_SUPPORTED 7
 
 static void print_option_usage(char optname, const char* desc)
 {
@@ -29,11 +29,12 @@ void print_usage(const char* progname)
 	ft_putstr(progname);
 	ft_putstr(" [option(s)] [file(s)]\n List symbols in [file(s)] (a.out by default).\n The options are:\n");
 
-	print_option_usage('a', "Display debugger-only symbols");
+	print_option_usage('a', "Display all symbols");
 	print_option_usage('g', "Display only external symbols");
 	print_option_usage('p', "Do not sort the symbols");
 	print_option_usage('r', "Reverse the sense of the sort");
 	print_option_usage('u', "Display only undefined symbols");
+	print_option_usage('D', "Display the dynamic symbols rather than the normal symbols");
 	print_option_usage('h', "Display this information");
 	exit(EXIT_SUCCESS);
 }
@@ -46,7 +47,8 @@ t_ft_nm_error parse_options(int argc, char** argv, t_options* opt)
 		{ .name = 'a', .has_param = false },
 		{ .name = 'g', .has_param = false },
 		{ .name = 'u', .has_param = false },
-		{ .name = 'h', .has_param = false }
+		{ .name = 'D', .has_param = false },
+		{ .name = 'h', .has_param = false },
 	};
 
 	opt->filenames = ft_calloc(argc, sizeof(const char*));
@@ -77,6 +79,9 @@ t_ft_nm_error parse_options(int argc, char** argv, t_options* opt)
 						break;
 					case 'u':
 						opt->undefined_only = true;
+						break;
+					case 'D':
+						opt->dynamic_only = true;
 						break;
 					case 'h':
 						free(opt->filenames);
