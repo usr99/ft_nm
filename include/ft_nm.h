@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_nm.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:39:12 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/22 17:50:48 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/22 20:54:19 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,10 @@ typedef struct
 typedef struct
 {
 	t_shdr_table	shdrtab;
-	void*			start;
+	Elf64_Section	shstrndx;
 	size_t 			size;
+	void*			start;
 	bool			x64;
-	Elf64_Section	last_symtab_ndx;
 }					t_elf_file;
 
 typedef struct
@@ -87,7 +87,7 @@ typedef struct
 /* sections management */
 bool			load_section_headers(t_elf_file* binary);
 Elf64_Shdr*		load_section_by_index(const t_elf_file* binary, Elf64_Section idx);
-t_symbol_table*	load_next_symtab(t_elf_file* binary, t_symbol_table* symtab, bool* error, Elf64_Word tab);
+t_ft_nm_error	load_symbol_table(t_elf_file* binary, t_symbol_table* symtab, Elf64_Word tabtype);
 
 /* List helpers */
 t_symbols*	create_list(int symbols_count);

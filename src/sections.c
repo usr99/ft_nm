@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 07:36:02 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/19 20:02:23 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/22 21:02:30 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ bool load_section_headers(t_elf_file* binary)
 		offset = elfhdr->e_shoff;
 		shdrtab->entry_size = elfhdr->e_shentsize;
 		shdrtab->entry_count = elfhdr->e_shnum;
+		binary->shstrndx = elfhdr->e_shstrndx;
 	}
 	else
 	{
@@ -57,11 +58,15 @@ bool load_section_headers(t_elf_file* binary)
 		offset = elfhdr32->e_shoff;
 		shdrtab->entry_size = elfhdr32->e_shentsize;
 		shdrtab->entry_count = elfhdr32->e_shnum;
+		binary->shstrndx = elfhdr->e_shstrndx;
 	}
 	shdrtab->start = binary->start + offset;
 
 	/* Make sure that the entire table is inside mapped memory  */
-	return (binary->size >= offset + shdrtab->entry_count * shdrtab->entry_size);
+	return (
+		binary->size >= offset + shdrtab->entry_count * shdrtab->entry_size &&
+		binary->shstrndx < shdrtab->entry_count
+	);
 }
 
 Elf64_Shdr* load_section_by_index(const t_elf_file* binary, Elf64_Section idx)
@@ -73,22 +78,22 @@ Elf64_Shdr* load_section_by_index(const t_elf_file* binary, Elf64_Section idx)
 	return validate_section_header(binary, section) ? section : NULL;
 }
 
-t_symbol_table* load_next_symtab(t_elf_file* binary, t_symbol_table* symtab, bool* error, Elf64_Word tab)
+t_ft_nm_error load_symbol_table(t_elf_file* binary, t_symbol_table* symtab, Elf64_Word tabtype)
 {
-	Elf64_Shdr* symhdr = binary->shdrtab.start + binary->last_symtab_ndx * binary->shdrtab.entry_size;
+	Elf64_Shdr* symhdr = binary->shdrtab.start;
 	Elf64_Section stridx;
 	void* strtab;
+	int i;
 
-	*error = false;
-	while (binary->last_symtab_ndx++ < binary->shdrtab.entry_count && symhdr->sh_type != tab)
+	i = -1;
+	while (++i < binary->shdrtab.entry_count && symhdr->sh_type != tabtype)
 		symhdr = (void*)symhdr + binary->shdrtab.entry_size;
+	
+	if (i == binary->shdrtab.entry_count)
+		return NO_SYMBOLS; // no .symtab sections
 
-	if (binary->last_symtab_ndx > binary->shdrtab.entry_count)
-		return NULL; // no more .symtab sections
-
-	*error = (!validate_section_header(binary, symhdr));
-	if (*error)
-		return NULL; // incorrect offset
+	if (!validate_section_header(binary, symhdr))
+		return OUT_OF_BOUNDS; // incorrect offset
 
 	/* Retrieve symbol table information */
 	if (binary->x64)
@@ -106,13 +111,11 @@ t_symbol_table* load_next_symtab(t_elf_file* binary, t_symbol_table* symtab, boo
 		symtab->symsize = symhdr32->sh_entsize;
 		stridx = symhdr32->sh_link;
 	}
+
 	/* Retrieve symbol names in the .strtab section */
 	strtab = load_section_by_index(binary, stridx);
 	if (!strtab)
-	{
-		*error = true;
-		return NULL;
-	}
+		return OUT_OF_BOUNDS;
 
 	if (binary->x64)
     {
@@ -124,5 +127,5 @@ t_symbol_table* load_next_symtab(t_elf_file* binary, t_symbol_table* symtab, boo
 		symtab->names = binary->start + ((Elf32_Shdr*)strtab)->sh_offset;
         symtab->strtab_end = ((Elf32_Shdr*)strtab)->sh_offset + ((Elf32_Shdr*)strtab)->sh_size;
     }
-	return symtab;
+	return SUCCESS;
 }
