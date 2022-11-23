@@ -6,126 +6,124 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 07:36:02 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/22 21:02:30 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/23 07:37:04 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
-#include "ft_nm.h"
 #include <stdio.h>
 
-static bool validate_section_header(const t_elf_file* binary, void* ptr)
+#include "ft_nm.h"
+#include "libft.h"
+
+static bool load_section_info(t_shdr* dest, void* src, t_elf_file* bin)
 {
-	/* Check that no offset could lead outside of the mapped content */
-	if (binary->x64)
+	if (bin->x64)
 	{
-		Elf64_Shdr* section = ptr;
-		return (
-			section->sh_link < binary->shdrtab.entry_count &&
-			section->sh_offset + section->sh_size < binary->size &&
-			section->sh_entsize <= section->sh_size
-		);
+		dest->strndx = ((Elf64_Shdr*)src)->sh_name;
+		dest->type = ((Elf64_Shdr*)src)->sh_type;
+		dest->flags = ((Elf64_Shdr*)src)->sh_flags;
+		dest->link = ((Elf64_Shdr*)src)->sh_link;
+		dest->data.buffer = bin->buffer + ((Elf64_Shdr*)src)->sh_offset;
+		dest->data.size = ((Elf64_Shdr*)src)->sh_size;
+		dest->data.entsize = ((Elf64_Shdr*)src)->sh_entsize;
 	}
 	else
 	{
-		Elf32_Shdr* section = ptr;
-        int i = (
-			section->sh_link < binary->shdrtab.entry_count &&
-			section->sh_offset + section->sh_size <= binary->size &&
-			section->sh_entsize <= section->sh_size
-		);
-		return i;		
+		dest->strndx = ((Elf32_Shdr*)src)->sh_name;
+		dest->type = ((Elf32_Shdr*)src)->sh_type;
+		dest->flags = ((Elf32_Shdr*)src)->sh_flags;
+		dest->link = ((Elf32_Shdr*)src)->sh_link;
+		dest->data.buffer = bin->buffer + ((Elf32_Shdr*)src)->sh_offset;
+		dest->data.size = ((Elf32_Shdr*)src)->sh_size;
+		dest->data.entsize = ((Elf32_Shdr*)src)->sh_entsize;		
 	}
-}
 
-bool load_section_headers(t_elf_file* binary)
-{
-	Elf64_Ehdr* elfhdr = binary->start;
-	t_shdr_table* shdrtab = &binary->shdrtab;
-	Elf64_Off offset;
+	if (dest->data.entsize)
+		dest->data.entcount = dest->data.size / dest->data.entsize;
 
-	binary->x64 =(elfhdr->e_ident[EI_CLASS] == ELFCLASS64);
-	if (binary->x64)
-	{
-		offset = elfhdr->e_shoff;
-		shdrtab->entry_size = elfhdr->e_shentsize;
-		shdrtab->entry_count = elfhdr->e_shnum;
-		binary->shstrndx = elfhdr->e_shstrndx;
-	}
-	else
-	{
-		Elf32_Ehdr* elfhdr32 = binary->start;
-		offset = elfhdr32->e_shoff;
-		shdrtab->entry_size = elfhdr32->e_shentsize;
-		shdrtab->entry_count = elfhdr32->e_shnum;
-		binary->shstrndx = elfhdr->e_shstrndx;
-	}
-	shdrtab->start = binary->start + offset;
-
-	/* Make sure that the entire table is inside mapped memory  */
+	/* Check that each pointer stays inside mapped content */
 	return (
-		binary->size >= offset + shdrtab->entry_count * shdrtab->entry_size &&
-		binary->shstrndx < shdrtab->entry_count
+		dest->link < bin->nsections &&
+		dest->data.buffer + dest->data.size < bin->buffer + bin->size &&
+		dest->data.entsize <= dest->data.size
 	);
 }
 
-Elf64_Shdr* load_section_by_index(const t_elf_file* binary, Elf64_Section idx)
+bool load_name(char** dest, t_shdr* strtab, Elf64_Word strndx)
 {
-	if (idx > binary->shdrtab.entry_count)
-		return NULL;
+	char* strname = strtab->data.buffer;
+	Elf64_Xword i = strndx;
+	while (i < strtab->data.size && strname[i])
+		i++;
 
-	Elf64_Shdr* section = binary->shdrtab.start + idx * binary->shdrtab.entry_size;
-	return validate_section_header(binary, section) ? section : NULL;
+	*dest = strtab->data.buffer + strndx;
+	return !(i == strtab->data.size); // check string is null-terminated
 }
 
-t_ft_nm_error load_symbol_table(t_elf_file* binary, t_symbol_table* symtab, Elf64_Word tabtype)
+t_ft_nm_error	load_sections(t_elf_file* bin, t_sections* s, bool dynamic)
 {
-	Elf64_Shdr* symhdr = binary->shdrtab.start;
-	Elf64_Section stridx;
-	void* strtab;
-	int i;
+	void* shdrs;
+	Elf64_Off shoff;
+	Elf64_Half entsize;
+	Elf64_Half shstrndx;
 
-	i = -1;
-	while (++i < binary->shdrtab.entry_count && symhdr->sh_type != tabtype)
-		symhdr = (void*)symhdr + binary->shdrtab.entry_size;
-	
-	if (i == binary->shdrtab.entry_count)
-		return NO_SYMBOLS; // no .symtab sections
-
-	if (!validate_section_header(binary, symhdr))
-		return OUT_OF_BOUNDS; // incorrect offset
-
-	/* Retrieve symbol table information */
-	if (binary->x64)
+	if (bin->x64)
 	{
-		symtab->symbols = binary->start + symhdr->sh_offset;
-		symtab->symcount = symhdr->sh_size / symhdr->sh_entsize;
-		symtab->symsize = symhdr->sh_entsize;
-		stridx = symhdr->sh_link;
+		bin->nsections = ((Elf64_Ehdr*)bin->buffer)->e_shnum;
+		shoff = ((Elf64_Ehdr*)bin->buffer)->e_shoff;
+		entsize = ((Elf64_Ehdr*)bin->buffer)->e_shentsize;
+		shstrndx = ((Elf64_Ehdr*)bin->buffer)->e_shstrndx;
 	}
 	else
 	{
-		Elf32_Shdr* symhdr32 = (Elf32_Shdr *)symhdr;
-		symtab->symbols = binary->start + symhdr32->sh_offset;
-		symtab->symcount = symhdr32->sh_size / symhdr32->sh_entsize;
-		symtab->symsize = symhdr32->sh_entsize;
-		stridx = symhdr32->sh_link;
+		bin->nsections = ((Elf32_Ehdr*)bin->buffer)->e_shnum;
+		shoff = ((Elf32_Ehdr*)bin->buffer)->e_shoff;
+		entsize = ((Elf32_Ehdr*)bin->buffer)->e_shentsize;
+		shstrndx = ((Elf32_Ehdr*)bin->buffer)->e_shstrndx;
 	}
 
-	/* Retrieve symbol names in the .strtab section */
-	strtab = load_section_by_index(binary, stridx);
-	if (!strtab)
+	if (shoff + bin->nsections * entsize > bin->size)
 		return OUT_OF_BOUNDS;
 
-	if (binary->x64)
-    {
-		symtab->names = binary->start + ((Elf64_Shdr*)strtab)->sh_offset;
-        symtab->strtab_end = ((Elf64_Shdr*)strtab)->sh_offset + ((Elf64_Shdr*)strtab)->sh_size;
-    }
-	else
-    {
-		symtab->names = binary->start + ((Elf32_Shdr*)strtab)->sh_offset;
-        symtab->strtab_end = ((Elf32_Shdr*)strtab)->sh_offset + ((Elf32_Shdr*)strtab)->sh_size;
-    }
+	shdrs = bin->buffer + shoff;
+
+	s->headers = ft_calloc(bin->nsections, entsize);
+	if (!s->headers)
+		return OOM;
+
+	int i = 0;
+	s->shstrtab = s->headers + shstrndx;
+	if (load_section_info(s->shstrtab, shdrs + shstrndx * entsize, bin))
+	{
+		void *curhdr = shdrs;
+		Elf64_Word symtype = (dynamic) ? SHT_DYNSYM : SHT_SYMTAB;
+		while (i < bin->nsections)
+		{
+			if (i != shstrndx)
+			{
+				if (!load_section_info(s->headers + i, curhdr, bin))
+					break ;
+
+				if (s->headers[i].type == symtype)
+					s->symtab = s->headers + i;
+				if (s->headers[i].type == SHT_SYMTAB)
+					s->strtab = s->headers + s->headers[i].link;
+			}
+
+			if (!load_name(&s->headers[i].name, s->shstrtab, s->headers[i].strndx))
+				break ;
+
+			curhdr += entsize;
+			i++;
+		}
+	}
+
+	if (i != bin->nsections)
+	{
+		free(s->headers);
+		return OUT_OF_BOUNDS;
+	}
+
 	return SUCCESS;
 }

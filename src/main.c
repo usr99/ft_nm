@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/22 20:57:31 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/23 07:37:30 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,8 +56,21 @@ static int fatal(t_ft_nm_error code, const char* prefix)
 	return EXIT_FAILURE;
 }
 
-static bool check_binary_format(Elf64_Ehdr* elfhdr)
+static bool detect_format(t_elf_file* bin)
 {
+	Elf64_Ehdr* elfhdr = bin->buffer;
+	switch (elfhdr->e_ident[EI_CLASS])
+	{
+		case ELFCLASS32:
+			bin->x64 = false;
+			break;
+		case ELFCLASS64:
+			bin->x64 = true;
+			break;
+		default:
+			return false;
+	}
+
 	return (
 		ft_memcmp(ELFMAG, elfhdr->e_ident, 4) == 0 &&
 		(elfhdr->e_ident[EI_CLASS] == ELFCLASS32 || elfhdr->e_ident[EI_CLASS] == ELFCLASS64) &&
@@ -94,20 +107,22 @@ int main(int argc, char** argv)
 		const char* fname = params.filenames[i];
 
 		t_elf_file bin = {0};
-		bin.start = map_file_content(fname, &bin.size);
-		if (bin.start == MAP_FAILED)
+		bin.buffer = map_file_content(fname, &bin.size);
+		if (bin.buffer == MAP_FAILED)
 			return fatal(FILE_MAP_FAIL, fname);
 
-		if (!check_binary_format(bin.start))
+		if (!detect_format(&bin))
 		{
-			munmap(bin.start, bin.size);
+			munmap(bin.buffer, bin.size);
 			return fatal(BAD_FILE_FORMAT, fname);
 		}
 
-		if (!load_section_headers(&bin))
+		t_sections sections;
+		t_ft_nm_error status = load_sections(&bin, &sections, params.dynamic_only);
+		if (status != SUCCESS)
 		{
-			munmap(bin.start, bin.size);
-			return fatal(OUT_OF_BOUNDS, fname);
+			munmap(bin.buffer, bin.size);
+			return fatal(status, fname);
 		}
 
 		if (params.fcount != 1)
@@ -117,26 +132,29 @@ int main(int argc, char** argv)
 			ft_putstr(":\n");
 		}
 
-		t_symbol_table symtab;
-		t_ft_nm_error status;
-		status = load_symbol_table(&bin, &symtab, (params.dynamic_only ? SHT_DYNSYM : SHT_SYMTAB));
-		if (status != SUCCESS)
+		t_symbols *symbols = create_list(sections.symtab->data.entcount);
+		if (!symbols)
 		{
-			munmap(bin.start, bin.size);
-			return fatal(status, fname);
+			free(sections.headers);
+			munmap(bin.buffer, bin.size);
+			return fatal(OOM, fname);			
 		}
 
-		t_symbols *symbols = create_list(symtab.symcount);
-		if (bin.x64)
-			load_list_64bits(&symtab, symbols);
-		else
-			load_list_32bits(&symtab, symbols);
+		if (!load_list(&sections, &params, symbols, &bin))
+		{
+			free(sections.headers);
+			munmap(symbols, sections.symtab->data.entcount * sizeof(t_symbols));
+			munmap(bin.buffer, bin.size);
+			return fatal(OUT_OF_BOUNDS, fname);
+		}
 
 		if (params.sort != SYMSORT_DISABLED)
-			sort_list(symbols, &symtab, (params.sort == SYMSORT_REVERSE));
-		print_list(symbols, &symtab, &bin, &params);
+			sort_list(symbols, (params.sort == SYMSORT_REVERSE));
+		print_list(symbols, &sections, &bin);
 
-		munmap(bin.start, bin.size);
+		free(sections.headers);
+		munmap(symbols, sections.symtab->data.entcount * sizeof(t_symbols));
+		munmap(bin.buffer, bin.size);
 		i++;
 	}
 

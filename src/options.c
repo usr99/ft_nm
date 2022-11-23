@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 17:08:47 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/22 04:46:39 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/22 17:28:30 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ t_ft_nm_error parse_options(int argc, char** argv, t_options* opt)
 							opt->sort = SYMSORT_REVERSE;
 						break;
 					case 'a':
-						opt->show_debug_syms = true;
+						opt->show_all = true;
 						break;
 					case 'g':
 						opt->extern_only = true;

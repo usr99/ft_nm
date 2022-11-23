@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   list_helpers.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: kali <kali@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 17:04:03 by timlecou          #+#    #+#             */
-/*   Updated: 2022/11/22 17:57:12 by kali             ###   ########.fr       */
+/*   Updated: 2022/11/23 07:39:09 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 t_symbols*  create_list(int symbols_count)
 {
     t_symbols*  sym = mmap(NULL, symbols_count * sizeof(sym), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	if (sym == MAP_FAILED)
+		return NULL;
 
     int i = 0;
     t_symbols*  tmp = sym;
@@ -47,52 +49,69 @@ int     list_size(t_symbols* symbols)
     return (i);
 }
 
-void	load_list_32bits(t_symbol_table* symtab, t_symbols* symbols)
+static bool validate_symbol(t_symbols* symbols, t_options* params)
 {
-	t_symbols*  tmp = symbols;
-    Elf32_Sym*  syms = symtab->symbols;
-    Elf32_Xword i = 0;
-
-    while (i < symtab->symcount)
+	if (params->show_all || (*symbols->name && symbols->type != STT_FILE))
     {
-        if (syms->st_name != 0 && ELF32_ST_TYPE(syms->st_info) != STT_FILE)
-        {
-            tmp->name = syms->st_name;
-            tmp->addr = syms->st_value;
-            tmp->type = ELF32_ST_TYPE(syms->st_info);
-            tmp->binding = ELF32_ST_BIND(syms->st_info);
-            tmp->visibility = ELF32_ST_VISIBILITY(syms->st_other);
-            tmp->shndx = syms->st_shndx;
-            tmp = tmp->next;
-        }
-        syms = syms + 1;
-        i++;
+		if (params->undefined_only)
+			return (!symbols->addr);
+		else if (params->extern_only)
+			return (symbols->binding != STB_LOCAL);
+		return true;
     }
-    tmp->next = NULL;
+	return false;
 }
 
-void	load_list_64bits(t_symbol_table* symtab, t_symbols* symbols)
+bool	load_list(t_sections* s, t_options* params, t_symbols* symbols, t_elf_file* bin)
 {
+	void* 		sym = s->symtab->data.buffer;
 	t_symbols*  tmp = symbols;
-    Elf64_Sym*  syms = symtab->symbols;
     Elf64_Xword i = 0;
+	Elf64_Word	strndx;
 
-    while (i < symtab->symcount)
+	while (i < s->symtab->data.entcount)
     {
-        if (syms->st_name != 0 && ELF64_ST_TYPE(syms->st_info) != STT_FILE)
+		if (bin->x64)
         {
-            tmp->name = syms->st_name;
-            tmp->addr = syms->st_value;
-            tmp->type = ELF64_ST_TYPE(syms->st_info);
-            tmp->binding = ELF64_ST_BIND(syms->st_info);
-            tmp->visibility = ELF64_ST_VISIBILITY(syms->st_other);
-            tmp->shndx = syms->st_shndx;
+			Elf64_Sym* sym64 = sym;
+			tmp->addr = sym64->st_value;
+			tmp->type = ELF64_ST_TYPE(sym64->st_info);
+			tmp->binding = ELF64_ST_BIND(sym64->st_info);
+			tmp->visibility = ELF64_ST_VISIBILITY(sym64->st_other);
+			tmp->shndx = sym64->st_shndx;
+			strndx = sym64->st_name;
+		}
+		else
+			{
+			Elf32_Sym* sym32 = sym;
+			tmp->addr = sym32->st_value;
+			tmp->type = ELF32_ST_TYPE(sym32->st_info);
+			tmp->binding = ELF32_ST_BIND(sym32->st_info);
+			tmp->visibility = ELF32_ST_VISIBILITY(sym32->st_other);
+			tmp->shndx = sym32->st_shndx;			
+			strndx = sym32->st_name;
+			}
+
+		bool success = true;
+		if (strndx)
+			success = load_name(&tmp->name, s->strtab, strndx);
+		else if (tmp->type == STT_SECTION)
+			success = load_name(&tmp->name, s->shstrtab, strndx);
+		else
+			tmp->name = "";
+		if (!success)
+			return false;
+
+		if (validate_symbol(tmp, params))
             tmp = tmp->next;
-        }
-        syms = syms + 1;
+		if (!success)
+			return false;
+
+		sym = sym + s->symtab->data.entsize;
         i++;
     }
     tmp->next = NULL;
+	return true;
 }
 
 void ft_putnbr_hex(size_t nbr)
@@ -119,38 +138,31 @@ void    print_zeros(size_t nbr, short arch)
     write(1, "0000000000000000", arch - i);
 }
 
-void    print_symbols(char* names, t_symbol_table* symtab)
-{
-    unsigned int    i = 0;
 
-    while (names[i] != '\0' && i < symtab->strtab_end)
-        i++;
-    write(1, names, i);
-    write(1, "\n", 1);
-}
-
-bool    have_to_print(t_options* params, t_symbols* sym)
-{
-    if (params->undefined_only)
-        return (!sym->addr);
-    else if (params->extern_only)
-    {
-        if (sym->binding == STB_LOCAL)
-            return (false);
-    }
-    return (true);
-}
-
-void    print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file* bin, t_options* params)
+void    print_list(t_symbols* symbols, t_sections* sections, t_elf_file* bin)
 {
     t_symbols*  tmp = symbols;
     char        type = 0;
 
+	// static const char* TYPES[] = {
+	// 	"STT_NOTYPE",
+	// 	"STT_OBJECT",
+	// 	"STT_FUNC",
+	// 	"STT_SECTION",
+	// 	"STT_FILE",
+	// 	"STT_COMMON",
+	// 	"STT_TLS"
+	// };
+	// static const char* BINDINGS[] = {
+	// 	"STB_LOCAL",
+	// 	"STB_GLOBAL",
+	// 	"STB_WEAK"
+	// };	
+
     while (tmp->next)
     {
-        type = detect_symbol_type(tmp, bin);
-        if (have_to_print(params, tmp))
-        {
+		// printf("%lX\t%s\t%s\t%d\t%s\n", tmp->addr, BINDINGS[tmp->binding], TYPES[tmp->type], tmp->shndx, (char*)symtab->names + tmp->name);
+		type = detect_symbol_type(tmp, sections);
             if (tmp->addr != 0)
             {
                 print_zeros(tmp->addr, (bin->x64 ? 16 : 8));
@@ -166,16 +178,14 @@ void    print_list(t_symbols* symbols, t_symbol_table* symtab, t_elf_file* bin, 
             write(1, " ", 1);
             write(1, &type, 1);
             write(1, " ", 1);
-            print_symbols(symtab->names + tmp->name, symtab);
-        }
-        // printf("%d\n", tmp->shndx);
+		ft_putendl(tmp->name);
         tmp = tmp->next;
     }
 }
 
 void	swap_names(t_symbols* node_1, t_symbols* node_2)
 {
-    Elf64_Word	tmp1 = node_1->name;
+    char*	tmp1 = node_1->name;
     node_1->name = node_2->name;
     node_2->name = tmp1;
 }
@@ -232,8 +242,7 @@ int	ft_strncmp_no_case(const char *s1, const char *s2, size_t n)
 	return (0);
 }
 
-
-void	sort_list(t_symbols* symbols, t_symbol_table* symtab, bool reverse)
+void	sort_list(t_symbols* symbols, bool reverse)
 {
 	int	curr_i;
 	int	next_i;
@@ -250,16 +259,30 @@ void	sort_list(t_symbols* symbols, t_symbol_table* symtab, bool reverse)
         {
             curr_i = 0;
             next_i = 0;
-            current_name = symtab->names + tmp->name;
-            next_name = symtab->names + tmp_2->name;
+			current_name = tmp->name;
+			next_name = tmp_2->name;
             while (current_name[curr_i] != '\0' && current_name[curr_i] == '_')
                 curr_i++;
             while (next_name[next_i] != '\0' && next_name[next_i] == '_')
                 next_i++;
+
+			size_t max = (ft_strlen(current_name) > ft_strlen(next_name)) ? ft_strlen(current_name) : ft_strlen(next_name);
             if (reverse == false)
-                ret = (ft_strncmp_no_case(&current_name[curr_i], &next_name[next_i], ft_strlen(&next_name[next_i])) >= 0);
-            else
-                ret = (ft_strncmp_no_case(&current_name[curr_i], &next_name[next_i], ft_strlen(&next_name[next_i])) < 0);
+			{
+				int res = ft_strncmp_no_case(&current_name[curr_i], &next_name[next_i], max);
+				if (res == 0 && curr_i != next_i)
+					ret = (curr_i < next_i);
+				else
+					ret = (res >= 0);
+			}
+			else
+			{
+				int res = ft_strncmp_no_case(&current_name[curr_i], &next_name[next_i], max);
+				if (res == 0 && curr_i != next_i)
+					ret = (curr_i > next_i);
+				else
+					ret = (res < 0);
+			}
             if (ret)
             {
                 swap_names(tmp, tmp_2);

@@ -8,3 +8,6 @@ libft.a
 # binaries
 ft_nm
 a.out
+
+# test files
+diff.sh
