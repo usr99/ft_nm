@@ -12,7 +12,7 @@ HEADERS = ft_nm.h
 DEPS	= ${addprefix include/, ${HEADERS}}
 
 SRCDIR	= ./src/
-SRC		= main.c sections.c list_helpers.c symbols.c options.c
+SRC		= main.c sections.c list_helpers.c symbols.c options.c sort.c
 OBJDIR	= ./objs/
 OBJS	= ${addprefix ${OBJDIR}, ${SRC:.c=.o}}
 
