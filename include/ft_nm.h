@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:39:12 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/23 06:30:13 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/24 06:53:17 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ typedef struct
 typedef struct s_symbols
 {
 	char*				name;
+	Elf64_Word			strndx;
 	Elf64_Addr			addr;
 	unsigned char		type;
 	unsigned char		binding;

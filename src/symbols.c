@@ -6,12 +6,16 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 14:30:19 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/23 07:04:01 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/24 08:07:29 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_nm.h"
 
+/*
+** N for .debug_str
+** find the right settings to determine n/N
+*/
 char detect_symbol_type(t_symbols* sym, t_sections* sections)
 {
 	if (sym->binding == STB_WEAK)

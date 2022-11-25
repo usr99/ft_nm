@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 17:04:03 by timlecou          #+#    #+#             */
-/*   Updated: 2022/11/23 07:39:09 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/24 08:07:31 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 
 t_symbols*  create_list(int symbols_count)
 {
-    t_symbols*  sym = mmap(NULL, symbols_count * sizeof(sym), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    t_symbols*  sym = mmap(NULL, symbols_count * sizeof(t_symbols), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 	if (sym == MAP_FAILED)
 		return NULL;
 
@@ -51,7 +51,7 @@ int     list_size(t_symbols* symbols)
 
 static bool validate_symbol(t_symbols* symbols, t_options* params)
 {
-	if (params->show_all || (*symbols->name && symbols->type != STT_FILE))
+	if (params->show_all || (symbols->strndx && symbols->type != STT_FILE))
     {
 		if (params->undefined_only)
 			return (!symbols->addr);
@@ -64,10 +64,9 @@ static bool validate_symbol(t_symbols* symbols, t_options* params)
 
 bool	load_list(t_sections* s, t_options* params, t_symbols* symbols, t_elf_file* bin)
 {
-	void* 		sym = s->symtab->data.buffer;
+	void* 		sym = s->symtab->data.buffer + s->symtab->data.entsize;
 	t_symbols*  tmp = symbols;
-    Elf64_Xword i = 0;
-	Elf64_Word	strndx;
+    Elf64_Xword i = 1;
 
 	while (i < s->symtab->data.entcount)
     {
@@ -79,33 +78,33 @@ bool	load_list(t_sections* s, t_options* params, t_symbols* symbols, t_elf_file*
 			tmp->binding = ELF64_ST_BIND(sym64->st_info);
 			tmp->visibility = ELF64_ST_VISIBILITY(sym64->st_other);
 			tmp->shndx = sym64->st_shndx;
-			strndx = sym64->st_name;
+			tmp->strndx = sym64->st_name;
 		}
 		else
-			{
-			Elf32_Sym* sym32 = sym;
+		{
+			Elf32_Sym *sym32 = sym;
 			tmp->addr = sym32->st_value;
 			tmp->type = ELF32_ST_TYPE(sym32->st_info);
 			tmp->binding = ELF32_ST_BIND(sym32->st_info);
 			tmp->visibility = ELF32_ST_VISIBILITY(sym32->st_other);
-			tmp->shndx = sym32->st_shndx;			
-			strndx = sym32->st_name;
-			}
-
-		bool success = true;
-		if (strndx)
-			success = load_name(&tmp->name, s->strtab, strndx);
-		else if (tmp->type == STT_SECTION)
-			success = load_name(&tmp->name, s->shstrtab, strndx);
-		else
-			tmp->name = "";
-		if (!success)
-			return false;
+			tmp->shndx = sym32->st_shndx;
+			tmp->strndx = sym32->st_name;
+		}
 
 		if (validate_symbol(tmp, params))
-            tmp = tmp->next;
-		if (!success)
-			return false;
+		{
+			bool success = true;
+			if (tmp->strndx)
+				success = load_name(&tmp->name, s->strtab, tmp->strndx);
+			else if (tmp->type == STT_SECTION)
+				success = load_name(&tmp->name, s->shstrtab, s->headers[tmp->shndx].strndx);
+			else
+				tmp->name = "";
+			if (!success)
+				return false;
+
+			tmp = tmp->next;
+		}
 
 		sym = sym + s->symtab->data.entsize;
         i++;
@@ -138,46 +137,45 @@ void    print_zeros(size_t nbr, short arch)
     write(1, "0000000000000000", arch - i);
 }
 
-
 void    print_list(t_symbols* symbols, t_sections* sections, t_elf_file* bin)
 {
     t_symbols*  tmp = symbols;
     char        type = 0;
 
-	// static const char* TYPES[] = {
-	// 	"STT_NOTYPE",
-	// 	"STT_OBJECT",
-	// 	"STT_FUNC",
-	// 	"STT_SECTION",
-	// 	"STT_FILE",
-	// 	"STT_COMMON",
-	// 	"STT_TLS"
-	// };
-	// static const char* BINDINGS[] = {
-	// 	"STB_LOCAL",
-	// 	"STB_GLOBAL",
-	// 	"STB_WEAK"
-	// };	
+	static const char* TYPES[] = {
+		"STT_NOTYPE",
+		"STT_OBJECT",
+		"STT_FUNC",
+		"STT_SECTION",
+		"STT_FILE",
+		"STT_COMMON",
+		"STT_TLS"
+	};
+	static const char* BINDINGS[] = {
+		"STB_LOCAL",
+		"STB_GLOBAL",
+		"STB_WEAK"
+	};	
 
     while (tmp->next)
     {
-		// printf("%lX\t%s\t%s\t%d\t%s\n", tmp->addr, BINDINGS[tmp->binding], TYPES[tmp->type], tmp->shndx, (char*)symtab->names + tmp->name);
+		// printf("%lX\t%s\t%s\t%d\t%s\n", tmp->addr, BINDINGS[tmp->binding], TYPES[tmp->type], tmp->shndx, tmp->name);
 		type = detect_symbol_type(tmp, sections);
-            if (tmp->addr != 0)
-            {
-                print_zeros(tmp->addr, (bin->x64 ? 16 : 8));
-                ft_putnbr_hex(tmp->addr);
-            }
-            else
-            {
-                if (bin->x64)
-                    write(1, "                ", 16);
-                else
-                    write(1, "        ", 8);
-            }
-            write(1, " ", 1);
-            write(1, &type, 1);
-            write(1, " ", 1);
+		if (tmp->addr != 0)
+		{
+			print_zeros(tmp->addr, (bin->x64 ? 16 : 8));
+			ft_putnbr_hex(tmp->addr);
+		}
+		else
+		{
+			if (tmp->type == STT_FILE || tmp->type == STT_SECTION)
+				write(1, "0000000000000000", (bin->x64 + 1) * 8);
+			else
+				write(1, "                ", (bin->x64 + 1) * 8);
+		}
+		write(1, " ", 1);
+		write(1, &type, 1);
+		write(1, " ", 1);
 		ft_putendl(tmp->name);
         tmp = tmp->next;
     }
@@ -242,6 +240,11 @@ int	ft_strncmp_no_case(const char *s1, const char *s2, size_t n)
 	return (0);
 }
 
+/*
+** Split on '.'/'_'
+** Sort by "most separators"
+** case insensitive but UPPERCASE < lowercase
+*/
 void	sort_list(t_symbols* symbols, bool reverse)
 {
 	int	curr_i;
@@ -261,9 +264,9 @@ void	sort_list(t_symbols* symbols, bool reverse)
             next_i = 0;
 			current_name = tmp->name;
 			next_name = tmp_2->name;
-            while (current_name[curr_i] != '\0' && current_name[curr_i] == '_')
+            while (current_name[curr_i] != '\0' && (current_name[curr_i] == '_' || current_name[curr_i] == '.'))
                 curr_i++;
-            while (next_name[next_i] != '\0' && next_name[next_i] == '_')
+            while (next_name[next_i] != '\0' && (next_name[next_i] == '_' || next_name[next_i] == '.'))
                 next_i++;
 
 			size_t max = (ft_strlen(current_name) > ft_strlen(next_name)) ? ft_strlen(current_name) : ft_strlen(next_name);
