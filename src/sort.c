@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 05:14:03 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/25 05:18:25 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/25 23:34:07 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,59 @@ static int	ft_strncmp_no_case(const char *s1, const char *s2, size_t n)
 		i++;
 	}
 	return (0);
+}
+
+static char* skip_separators(char* str, int* count)
+{
+	*count = 0;
+	while (str[*count] && str[*count] == '_')
+		(*count)++;
+	return str + *count;
+}
+
+static char* next_word(char* str)
+{
+	while (*str && *str != '_')
+		str++;
+	return str;
+}
+
+int compare_symbols(t_symbols* lhs, t_symbols* rhs)
+{
+	int	sepdiff = 0;
+	char*	rname = rhs->name;
+	char*	lname = lhs->name;
+
+	while (*lname && *rname)
+	{
+		int lcount, rcount;
+		lname = skip_separators(lname, &lcount);
+		rname = skip_separators(rname, &rcount);
+
+		int i = 0;
+		while (lname[i] && rname[i] && lname[i] != '_' && rname[i] != '_')
+		{
+			char diff = lname[i] - rname[i];
+			bool alpha = (ft_isalpha(lname[i]) && ft_isalpha(rname[i]));
+			if (diff && (alpha ? (diff != 32 && diff != -32) : true))
+				return diff;
+			i++;
+		}
+		if (sepdiff >= 0)
+			sepdiff = lcount - rcount;
+
+		lname = next_word(lname + i);
+		rname = next_word(rname + i);
+	}
+	
+	if (!sepdiff)
+	{
+		int cmp = ft_strncmp(lhs->name, rhs->name, ft_strlen(lhs->name));
+		if (!cmp)
+			return (long long)lhs->addr - (long long)rhs->addr;
+		return cmp;
+	}
+	return sepdiff;
 }
 
 static void	swap_names(t_symbols* node_1, t_symbols* node_2)
