@@ -6,86 +6,69 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 05:14:03 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/25 23:34:07 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/29 17:48:33 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_nm.h"
 #include "libft.h"
 
-static int	ft_strncmp_no_case(const char *s1, const char *s2, size_t n)
+static bool is_separator(char c)
 {
-	size_t	i;
-    char    c1;
-    char    c2;
+	return (c == '_' || c == '.');
+}
 
-	i = 0;
-	while ((s1[i] || s2[i]) && i < n)
+static int compare_symbols(const char* lname, const char* rname)
+{
+	int uppercase = 0;
+	int separator = 0;
+	int loff = 0;
+	int roff = 0;
+
+	while (lname[loff] && rname[roff])
 	{
-        c1 = s1[i];
-        c2 = s2[i];
-        if (c1 >= 65 && c1 <= 90)
-            c1 += 32;
-        if (c2 >= 65 && c2 <= 90)
-            c2 += 32;
-		if (c1 != c2)
-			return ((unsigned char)c1 - (unsigned char)c2);
-		i++;
-	}
-	return (0);
-}
+		char lc = ft_toupper(lname[loff]);
+		char rc = ft_toupper(rname[roff]);
 
-static char* skip_separators(char* str, int* count)
-{
-	*count = 0;
-	while (str[*count] && str[*count] == '_')
-		(*count)++;
-	return str + *count;
-}
-
-static char* next_word(char* str)
-{
-	while (*str && *str != '_')
-		str++;
-	return str;
-}
-
-int compare_symbols(t_symbols* lhs, t_symbols* rhs)
-{
-	int	sepdiff = 0;
-	char*	rname = rhs->name;
-	char*	lname = lhs->name;
-
-	while (*lname && *rname)
-	{
-		int lcount, rcount;
-		lname = skip_separators(lname, &lcount);
-		rname = skip_separators(rname, &rcount);
-
-		int i = 0;
-		while (lname[i] && rname[i] && lname[i] != '_' && rname[i] != '_')
+		if (is_separator(rc))
 		{
-			char diff = lname[i] - rname[i];
-			bool alpha = (ft_isalpha(lname[i]) && ft_isalpha(rname[i]));
-			if (diff && (alpha ? (diff != 32 && diff != -32) : true))
-				return diff;
-			i++;
+			if (!separator && (!is_separator(lc) || (rc == '.' && lc == '_')))
+				separator = 1;
+			roff++;
 		}
-		if (sepdiff >= 0)
-			sepdiff = lcount - rcount;
+		if (is_separator(lc))
+		{
+			if (!separator && (!is_separator(rc) || (lc == '.' && rc == '_')))
+				separator = -1;
+			loff++;
+		}
+		if (!is_separator(rc) && !is_separator(lc))
+		{
+			char diff = lc - rc;
+			if (diff)
+				return diff;
+			else if (ft_isalpha(lc) && ft_isalpha(rc))
+			{
+				int tmp = lname[loff] - rname[roff];
+				if (!uppercase)
+				{
+					if (tmp == -32)
+						uppercase = 1;
+					else if (tmp == 32)
+						uppercase = -1;
+				}
+			}
 
-		lname = next_word(lname + i);
-		rname = next_word(rname + i);
+			roff++;
+			loff++;
+		}
 	}
-	
-	if (!sepdiff)
-	{
-		int cmp = ft_strncmp(lhs->name, rhs->name, ft_strlen(lhs->name));
-		if (!cmp)
-			return (long long)lhs->addr - (long long)rhs->addr;
-		return cmp;
-	}
-	return sepdiff;
+
+	if (lname[loff] != rname[roff])
+		return lname[loff] ? lname[loff] : -rname[roff];
+	else if (uppercase)
+		return uppercase;
+	return separator;
 }
 
 static void	swap_names(t_symbols* node_1, t_symbols* node_2)
@@ -123,53 +106,25 @@ static void	swap_shndxs(t_symbols* node_1, t_symbols* node_2)
     node_2->shndx = tmp1;
 }
 
-/*
-** Split on '.'/'_'
-** Sort by "most separators"
-** case insensitive but UPPERCASE < lowercase
-*/
 void	sort_list(t_symbols* symbols, bool reverse)
 {
-	int	curr_i;
-	int	next_i;
 	t_symbols*	tmp = symbols;
 	t_symbols*	tmp_2 = symbols->next;
-    char*       current_name = NULL;
-    char*       next_name = NULL;
-    bool        ret = false;
+	bool		swap;
+    int			ret;
 
     while (tmp->next)
     {
         tmp_2 = tmp->next;
         while (tmp_2->next)
         {
-            curr_i = 0;
-            next_i = 0;
-			current_name = tmp->name;
-			next_name = tmp_2->name;
-            while (current_name[curr_i] != '\0' && (current_name[curr_i] == '_' || current_name[curr_i] == '.'))
-                curr_i++;
-            while (next_name[next_i] != '\0' && (next_name[next_i] == '_' || next_name[next_i] == '.'))
-                next_i++;
-
-			size_t max = (ft_strlen(current_name) > ft_strlen(next_name)) ? ft_strlen(current_name) : ft_strlen(next_name);
-            if (reverse == false)
-			{
-				int res = ft_strncmp_no_case(&current_name[curr_i], &next_name[next_i], max);
-				if (res == 0 && curr_i != next_i)
-					ret = (curr_i < next_i);
-				else
-					ret = (res >= 0);
-			}
+			ret = compare_symbols(tmp->name, tmp_2->name);
+		    if (ret)
+				swap = ((ret > 0) == !reverse);
 			else
-			{
-				int res = ft_strncmp_no_case(&current_name[curr_i], &next_name[next_i], max);
-				if (res == 0 && curr_i != next_i)
-					ret = (curr_i > next_i);
-				else
-					ret = (res < 0);
-			}
-            if (ret)
+				swap = (tmp->addr > tmp_2->addr);
+
+			if (swap)
             {
                 swap_names(tmp, tmp_2);
                 swap_addresses(tmp, tmp_2);

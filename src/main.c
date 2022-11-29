@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/25 05:10:17 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/11/29 16:30:19 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,13 +79,6 @@ static bool detect_format(t_elf_file* bin)
 		elfhdr->e_type != ET_CORE
 	);
 }
-
-static void text_tmp() {}
-static void text__tmp() {}
-static void _text_tmp() {}
-static void _text__tmp() {}
-static void __text_tmp() {}
-static void __text__tmp() {}
 
 int main(int argc, char** argv)
 {
