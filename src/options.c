@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 17:08:47 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/22 17:28:30 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/03 18:58:57 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,5 +104,8 @@ t_ft_nm_error parse_options(int argc, char** argv, t_options* opt)
 				print_usage(*argv);
 		}
 	}
+
+	if (opt->undefined_only)
+		opt->show_all = false;
 	return SUCCESS;
 }
