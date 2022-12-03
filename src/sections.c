@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 07:36:02 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/23 07:37:04 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/03 18:32:05 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,5 +125,6 @@ t_ft_nm_error	load_sections(t_elf_file* bin, t_sections* s, bool dynamic)
 		return OUT_OF_BOUNDS;
 	}
 
+	s->count = bin->nsections;
 	return SUCCESS;
 }

@@ -6,17 +6,13 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 14:30:19 by mamartin          #+#    #+#             */
-/*   Updated: 2022/12/03 18:22:16 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/03 18:32:54 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_nm.h"
 #include "libft.h"
 
-/*
-** N for .debug_str
-** find the right settings to determine n/N
-*/
 char detect_symbol_type(t_symbols* sym, t_sections* sections)
 {
 	if (sym->binding == STB_WEAK)
@@ -30,6 +26,9 @@ char detect_symbol_type(t_symbols* sym, t_sections* sections)
 	else
 	{
 		t_shdr* shdr = sections->headers + sym->shndx;
+		if (sym->shndx >= sections->count)
+			return 0;
+
 		if (shdr->type == SHT_NULL || shdr->flags & SHF_ALLOC)
 		{
 			if (shdr->flags & SHF_EXECINSTR)

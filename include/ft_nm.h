@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:39:12 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/24 06:53:17 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/03 18:33:18 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ typedef struct
 	t_shdr*			symtab;
 	t_shdr*			strtab;
 	t_shdr*			shstrtab;
+	Elf64_Section	count;
 }				t_sections;
 
 typedef struct
@@ -99,7 +100,7 @@ bool			load_name(char** dest, t_shdr* strtab, Elf64_Word strndx);
 /* List helpers */
 t_symbols*	create_list(int symbols_count);
 int			list_size(t_symbols* symbols);
-void		print_list(t_symbols* symbols, t_sections* sections, t_elf_file* bin);
+bool		print_list(t_symbols* symbols, t_sections* sections, t_elf_file* bin);
 bool		load_list(t_sections* s, t_options* params, t_symbols* symbols, t_elf_file* bin);
 void		sort_list(t_symbols* symbols, bool reverse);
 void		ft_putnbr_hex(size_t nbr);

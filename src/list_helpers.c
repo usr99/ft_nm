@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 17:04:03 by timlecou          #+#    #+#             */
-/*   Updated: 2022/11/25 05:19:19 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/03 18:29:31 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,7 +137,7 @@ void    print_zeros(size_t nbr, short arch)
     write(1, "0000000000000000", arch - i);
 }
 
-void    print_list(t_symbols* symbols, t_sections* sections, t_elf_file* bin)
+bool    print_list(t_symbols* symbols, t_sections* sections, t_elf_file* bin)
 {
     t_symbols*  tmp = symbols;
     char        type = 0;
@@ -161,6 +161,9 @@ void    print_list(t_symbols* symbols, t_sections* sections, t_elf_file* bin)
     {
 		// printf("%lX\t%s\t%s\t%d\t%s\n", tmp->addr, BINDINGS[tmp->binding], TYPES[tmp->type], tmp->shndx, tmp->name);
 		type = detect_symbol_type(tmp, sections);
+		if (!type)
+			return false;
+
 		if (tmp->addr != 0)
 		{
 			print_zeros(tmp->addr, (bin->x64 ? 16 : 8));
@@ -179,4 +182,5 @@ void    print_list(t_symbols* symbols, t_sections* sections, t_elf_file* bin)
 		ft_putendl(tmp->name);
         tmp = tmp->next;
     }
+	return true;
 }

@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/29 16:30:19 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/03 18:34:55 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,11 +150,14 @@ int main(int argc, char** argv)
 
 		if (params.sort != SYMSORT_DISABLED)
 			sort_list(symbols, (params.sort == SYMSORT_REVERSE));
-		print_list(symbols, &sections, &bin);
+		bool ret = print_list(symbols, &sections, &bin);
 
 		free(sections.headers);
 		munmap(symbols, sections.symtab->data.entcount * sizeof(t_symbols));
 		munmap(bin.buffer, bin.size);
+
+		if (!ret)
+			return fatal(OUT_OF_BOUNDS, fname);
 		i++;
 	}
 
