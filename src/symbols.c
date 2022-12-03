@@ -6,11 +6,12 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 14:30:19 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/24 08:07:29 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/03 18:22:16 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_nm.h"
+#include "libft.h"
 
 /*
 ** N for .debug_str
@@ -52,7 +53,7 @@ char detect_symbol_type(t_symbols* sym, t_sections* sections)
 				type = 'R';
 		}
 		else
-			return (shdr->flags & SHF_STRINGS) ? 'n' : 'N';
+			return (ft_strncmp(shdr->name, ".debug_", 7) == 0) ? 'N' : 'n';
 	}
 	return sym->binding == STB_GLOBAL ? type : type + 32;
 }
