@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 07:36:02 by mamartin          #+#    #+#             */
-/*   Updated: 2022/12/03 19:02:54 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/05 10:39:54 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ t_ft_nm_error	load_sections(t_elf_file* bin, t_sections* s, bool dynamic)
 
 	shdrs = bin->buffer + shoff;
 
-	s->headers = ft_calloc(bin->nsections, entsize);
+	s->headers = ft_calloc(bin->nsections, sizeof(t_shdr));
 	if (!s->headers)
 		return OOM;
 

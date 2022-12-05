@@ -142,9 +142,9 @@ int main(int argc, char** argv)
 
 		if (!load_list(&sections, &params, symbols, &bin))
 		{
-			free(sections.headers);
 			munmap(symbols, sections.symtab->data.entcount * sizeof(t_symbols));
 			munmap(bin.buffer, bin.size);
+			free(sections.headers);
 			return fatal(OUT_OF_BOUNDS, fname);
 		}
 
@@ -152,9 +152,9 @@ int main(int argc, char** argv)
 			sort_list(symbols, (params.sort == SYMSORT_REVERSE));
 		bool ret = print_list(symbols, &sections, &bin);
 
-		free(sections.headers);
 		munmap(symbols, sections.symtab->data.entcount * sizeof(t_symbols));
 		munmap(bin.buffer, bin.size);
+		free(sections.headers);
 
 		if (!ret)
 			return fatal(OUT_OF_BOUNDS, fname);
