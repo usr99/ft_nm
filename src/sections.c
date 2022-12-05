@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 07:36:02 by mamartin          #+#    #+#             */
-/*   Updated: 2022/12/03 18:32:05 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/03 19:02:54 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,9 +106,11 @@ t_ft_nm_error	load_sections(t_elf_file* bin, t_sections* s, bool dynamic)
 					break ;
 
 				if (s->headers[i].type == symtype)
+				{
 					s->symtab = s->headers + i;
-				if (s->headers[i].type == SHT_SYMTAB)
 					s->strtab = s->headers + s->headers[i].link;
+				}
+				// if (s->headers[i].type == SHT_SYMTAB)
 			}
 
 			if (!load_name(&s->headers[i].name, s->shstrtab, s->headers[i].strndx))
