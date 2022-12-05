@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/12/03 18:34:55 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/05 17:32:56 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,8 @@ static bool detect_format(t_elf_file* bin)
 		(elfhdr->e_ident[EI_CLASS] == ELFCLASS32 || elfhdr->e_ident[EI_CLASS] == ELFCLASS64) &&
 		(elfhdr->e_ident[EI_DATA] == ELFDATA2LSB || elfhdr->e_ident[EI_DATA] == ELFDATA2MSB) &&
 		elfhdr->e_ident[EI_VERSION] == EV_CURRENT &&
-		elfhdr->e_type != ET_CORE
+		elfhdr->e_type != ET_CORE &&
+		(elfhdr->e_machine == EM_386 || elfhdr->e_machine == EM_X86_64)
 	);
 }
 
