@@ -142,24 +142,8 @@ bool    print_list(t_symbols* symbols, t_sections* sections, t_elf_file* bin)
     t_symbols*  tmp = symbols;
     char        type = 0;
 
-	static const char* TYPES[] = {
-		"STT_NOTYPE",
-		"STT_OBJECT",
-		"STT_FUNC",
-		"STT_SECTION",
-		"STT_FILE",
-		"STT_COMMON",
-		"STT_TLS"
-	};
-	static const char* BINDINGS[] = {
-		"STB_LOCAL",
-		"STB_GLOBAL",
-		"STB_WEAK"
-	};	
-
     while (tmp->next)
     {
-		// printf("%lX\t%s\t%s\t%d\t%s\n", tmp->addr, BINDINGS[tmp->binding], TYPES[tmp->type], tmp->shndx, tmp->name);
 		type = detect_symbol_type(tmp, sections);
 		if (!type)
 			return false;
