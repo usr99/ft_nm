@@ -7,8 +7,8 @@ libft.a
 
 # binaries
 ft_nm
-a.out
 
 # test files
+binaries/
 mine
 off

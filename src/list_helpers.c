@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 17:04:03 by timlecou          #+#    #+#             */
-/*   Updated: 2022/12/03 18:29:31 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/05 09:24:34 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,7 +171,7 @@ bool    print_list(t_symbols* symbols, t_sections* sections, t_elf_file* bin)
 		}
 		else
 		{
-			if (tmp->type == STT_FILE || tmp->type == STT_SECTION)
+			if (ft_toupper(type) != 'W' && ft_toupper(type) != 'U')
 				write(1, "0000000000000000", (bin->x64 + 1) * 8);
 			else
 				write(1, "                ", (bin->x64 + 1) * 8);
