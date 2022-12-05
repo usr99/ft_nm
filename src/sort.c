@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 05:14:03 by mamartin          #+#    #+#             */
-/*   Updated: 2022/12/05 09:46:44 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/05 09:55:58 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 static bool is_separator(char c)
 {
-	return (c == '_' || c == '.');
+	return (c == '_' || c == '.' || c == '@');
 }
 
 static int compare_symbols(const char* lname, const char* rname)
