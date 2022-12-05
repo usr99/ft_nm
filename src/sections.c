@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 07:36:02 by mamartin          #+#    #+#             */
-/*   Updated: 2022/12/05 10:39:54 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/05 16:46:00 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ static bool load_section_info(t_shdr* dest, void* src, t_elf_file* bin)
 	/* Check that each pointer stays inside mapped content */
 	return (
 		dest->link < bin->nsections &&
-		dest->data.buffer + dest->data.size < bin->buffer + bin->size &&
+		(dest->data.buffer + dest->data.size < bin->buffer + bin->size || (dest->type != SHT_SYMTAB && dest->type != SHT_STRTAB)) &&
 		dest->data.entsize <= dest->data.size
 	);
 }
@@ -110,7 +110,6 @@ t_ft_nm_error	load_sections(t_elf_file* bin, t_sections* s, bool dynamic)
 					s->symtab = s->headers + i;
 					s->strtab = s->headers + s->headers[i].link;
 				}
-				// if (s->headers[i].type == SHT_SYMTAB)
 			}
 
 			if (!load_name(&s->headers[i].name, s->shstrtab, s->headers[i].strndx))
@@ -125,6 +124,11 @@ t_ft_nm_error	load_sections(t_elf_file* bin, t_sections* s, bool dynamic)
 	{
 		free(s->headers);
 		return OUT_OF_BOUNDS;
+	}
+	else if (!s->symtab)
+	{
+		free(s->headers);
+		return NO_SYMBOLS;
 	}
 
 	s->count = bin->nsections;

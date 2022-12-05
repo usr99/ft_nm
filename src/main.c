@@ -109,10 +109,14 @@ int main(int argc, char** argv)
 		t_elf_file bin = {0};
 		bin.buffer = map_file_content(fname, &bin.size);
 		if (bin.buffer == MAP_FAILED)
+		{
+			free(params.filenames);
 			return fatal(FILE_MAP_FAIL, fname);
+		}
 
 		if (!detect_format(&bin))
 		{
+			free(params.filenames);
 			munmap(bin.buffer, bin.size);
 			return fatal(BAD_FILE_FORMAT, fname);
 		}
@@ -121,6 +125,7 @@ int main(int argc, char** argv)
 		t_ft_nm_error status = load_sections(&bin, &sections, params.dynamic_only);
 		if (status != SUCCESS)
 		{
+			free(params.filenames);
 			munmap(bin.buffer, bin.size);
 			return fatal(status, fname);
 		}
@@ -135,6 +140,7 @@ int main(int argc, char** argv)
 		t_symbols *symbols = create_list(sections.symtab->data.entcount);
 		if (!symbols)
 		{
+			free(params.filenames);
 			free(sections.headers);
 			munmap(bin.buffer, bin.size);
 			return fatal(OOM, fname);			
@@ -142,6 +148,7 @@ int main(int argc, char** argv)
 
 		if (!load_list(&sections, &params, symbols, &bin))
 		{
+			free(params.filenames);
 			munmap(symbols, sections.symtab->data.entcount * sizeof(t_symbols));
 			munmap(bin.buffer, bin.size);
 			free(sections.headers);
@@ -157,7 +164,10 @@ int main(int argc, char** argv)
 		free(sections.headers);
 
 		if (!ret)
+		{
+			free(params.filenames);
 			return fatal(OUT_OF_BOUNDS, fname);
+		}
 		i++;
 	}
 
