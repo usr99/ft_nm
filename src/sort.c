@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 05:14:03 by mamartin          #+#    #+#             */
-/*   Updated: 2022/11/29 17:48:33 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/05 09:46:44 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,9 +52,9 @@ static int compare_symbols(const char* lname, const char* rname)
 				int tmp = lname[loff] - rname[roff];
 				if (!uppercase)
 				{
-					if (tmp == -32)
-						uppercase = 1;
-					else if (tmp == 32)
+					if (tmp == 32)
+						uppercase = 1; // uppercase should go first
+					else if (tmp == -32)
 						uppercase = -1;
 				}
 			}
