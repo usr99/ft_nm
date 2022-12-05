@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 07:36:02 by mamartin          #+#    #+#             */
-/*   Updated: 2022/12/05 16:46:00 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/05 17:42:40 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ static bool load_section_info(t_shdr* dest, void* src, t_elf_file* bin)
 	/* Check that each pointer stays inside mapped content */
 	return (
 		dest->link < bin->nsections &&
-		(dest->data.buffer + dest->data.size < bin->buffer + bin->size || (dest->type != SHT_SYMTAB && dest->type != SHT_STRTAB)) &&
+		(dest->data.buffer + dest->data.size <= bin->buffer + bin->size || (dest->type != SHT_SYMTAB && dest->type != SHT_STRTAB)) &&
 		dest->data.entsize <= dest->data.size
 	);
 }
