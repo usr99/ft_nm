@@ -121,7 +121,7 @@ int main(int argc, char** argv)
 			return fatal(BAD_FILE_FORMAT, fname);
 		}
 
-		t_sections sections;
+		t_sections sections = {0};
 		t_ft_nm_error status = load_sections(&bin, &sections, params.dynamic_only);
 		if (status != SUCCESS)
 		{
