@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 14:38:42 by mamartin          #+#    #+#             */
-/*   Updated: 2022/12/05 17:32:56 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/25 21:00:11 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,35 +102,10 @@ int main(int argc, char** argv)
 		params.fcount = 1;
 	}
 
-	int i = 0;
-	while (i < params.fcount)
+	int i;
+	for (i = 0; i < params.fcount; i++)
 	{
 		const char* fname = params.filenames[i];
-
-		t_elf_file bin = {0};
-		bin.buffer = map_file_content(fname, &bin.size);
-		if (bin.buffer == MAP_FAILED)
-		{
-			free(params.filenames);
-			return fatal(FILE_MAP_FAIL, fname);
-		}
-
-		if (!detect_format(&bin))
-		{
-			free(params.filenames);
-			munmap(bin.buffer, bin.size);
-			return fatal(BAD_FILE_FORMAT, fname);
-		}
-
-		t_sections sections = {0};
-		t_ft_nm_error status = load_sections(&bin, &sections, params.dynamic_only);
-		if (status != SUCCESS)
-		{
-			free(params.filenames);
-			munmap(bin.buffer, bin.size);
-			return fatal(status, fname);
-		}
-
 		if (params.fcount != 1)
 		{
 			ft_putchar('\n');
@@ -138,22 +113,46 @@ int main(int argc, char** argv)
 			ft_putstr(":\n");
 		}
 
+		t_elf_file bin = {0};
+		bin.buffer = map_file_content(fname, &bin.size);
+		if (bin.buffer == MAP_FAILED)
+		{
+			fatal(FILE_MAP_FAIL, fname);
+			continue ;
+		}
+
+		if (!detect_format(&bin))
+		{
+			munmap(bin.buffer, bin.size);
+			fatal(BAD_FILE_FORMAT, fname);
+			continue ;
+		}
+
+		t_sections sections = {0};
+		t_ft_nm_error status = load_sections(&bin, &sections, params.dynamic_only);
+		if (status != SUCCESS)
+		{
+			munmap(bin.buffer, bin.size);
+			fatal(status, fname);
+			continue ;
+		}
+
 		t_symbols *symbols = create_list(sections.symtab->data.entcount);
 		if (!symbols)
 		{
-			free(params.filenames);
 			free(sections.headers);
 			munmap(bin.buffer, bin.size);
-			return fatal(OOM, fname);			
+			fatal(OOM, fname);			
+			continue ;
 		}
 
 		if (!load_list(&sections, &params, symbols, &bin))
 		{
-			free(params.filenames);
 			munmap(symbols, sections.symtab->data.entcount * sizeof(t_symbols));
 			munmap(bin.buffer, bin.size);
 			free(sections.headers);
-			return fatal(OUT_OF_BOUNDS, fname);
+			fatal(OUT_OF_BOUNDS, fname);
+			continue ;
 		}
 
 		if (params.sort != SYMSORT_DISABLED)
@@ -166,10 +165,9 @@ int main(int argc, char** argv)
 
 		if (!ret)
 		{
-			free(params.filenames);
-			return fatal(OUT_OF_BOUNDS, fname);
+			fatal(OUT_OF_BOUNDS, fname);
+			continue ;
 		}
-		i++;
 	}
 
 	free(params.filenames);
