@@ -6,7 +6,7 @@
 /*   By: mamartin <mamartin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/19 14:30:19 by mamartin          #+#    #+#             */
-/*   Updated: 2022/12/03 18:32:54 by mamartin         ###   ########.fr       */
+/*   Updated: 2022/12/27 01:44:41 by mamartin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,14 @@
 char detect_symbol_type(t_symbols* sym, t_sections* sections)
 {
 	if (sym->binding == STB_WEAK)
-		return sym->addr ? 'W' : 'w';
+	{
+		if (sym->type == STT_OBJECT)
+			return sym->addr ? 'V' : 'v';
+		else
+			return sym->addr ? 'W' : 'w';
+	}
+	else if (sym->binding == STB_GNU_UNIQUE)
+		return 'u';
 	
 	char type;
     if (sym->shndx == SHN_ABS)
